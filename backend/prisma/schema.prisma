@@ -1,0 +1,340 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ────────────────────────────────
+// USERS & INTERESTS
+// ────────────────────────────────
+
+model User {
+  id           String  @id @default(cuid())
+  username     String  @unique
+  email        String  @unique
+  // Nullable: a Google-only account has no password. Never nullable in
+  // spirit for a local-signup account — auth.service.ts enforces that one
+  // of passwordHash/googleId is always set at creation time.
+  passwordHash String?
+  // Set when the account was created via (or later linked to) Google
+  // sign-in. Nullable because most accounts today are email/password.
+  googleId     String? @unique
+  displayName  String
+  bio          String?
+  city            String?
+  country         String?
+  profileImageUrl String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  interests UserInterest[]
+
+  posts    Post[]
+  comments Comment[]
+  likes    Like[]
+
+  followedBy Follow[] @relation("Following") // users who follow me
+  following  Follow[] @relation("Follower") // users I follow
+
+  organizedEvents Event[]
+  attendances     EventAttendance[]
+
+  createdCommunities   Community[]
+  communityMemberships CommunityMember[]
+
+  ownedProfiles Profile[] // future: artist/band/venue/org pages this user manages
+
+  receivedNotifications Notification[] @relation("NotificationRecipient")
+  triggeredNotifications Notification[] @relation("NotificationActor")
+
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+
+  @@index([city, country])
+}
+
+model Interest {
+  id   String @id @default(cuid())
+  name String @unique // e.g. "Jazz", "Balkan Music", "Local News"
+  slug String @unique
+
+  // Links a (granular, free-text) interest to the (fixed-enum) Post category
+  // it should surface in the interest feed — e.g. "Jazz" -> MUSIC. Nullable
+  // because an interest doesn't have to map to a post category at all.
+  relatedCategory PostCategory?
+
+  users UserInterest[]
+}
+
+model UserInterest {
+  userId     String
+  interestId String
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  interest Interest @relation(fields: [interestId], references: [id], onDelete: Cascade)
+
+  @@id([userId, interestId])
+  @@index([interestId])
+}
+
+// ────────────────────────────────
+// FOLLOW SYSTEM
+// ────────────────────────────────
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followingId])
+}
+
+// ────────────────────────────────
+// POSTS, LIKES, COMMENTS
+// ────────────────────────────────
+
+enum PostCategory {
+  LOCAL_NEWS
+  NATIONAL_NEWS
+  WORLD_NEWS
+  MUSIC
+  ART
+  CULTURE
+  THEATRE
+  CINEMA
+  TECHNOLOGY
+  SCIENCE
+  GENERAL
+}
+
+model Post {
+  id        String       @id @default(cuid())
+  authorId  String
+  content   String
+  category  PostCategory @default(GENERAL)
+  city      String?
+  country   String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  // Prepped for community posts later — unused by the API in the MVP.
+  communityId String?
+  community   Community? @relation(fields: [communityId], references: [id], onDelete: SetNull)
+
+  author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  likes    Like[]
+  comments Comment[]
+
+  @@index([authorId])
+  @@index([category])
+  @@index([city, country])
+  @@index([createdAt])
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([userId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  postId    String
+  authorId  String
+  content   String
+  createdAt DateTime @default(now())
+
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([authorId])
+}
+
+// ────────────────────────────────
+// EVENTS
+// ────────────────────────────────
+
+enum EventCategory {
+  MUSIC
+  CONCERT
+  ART
+  EXHIBITION
+  THEATRE
+  CINEMA
+  FESTIVAL
+  CULTURE
+  OTHER
+}
+
+enum AttendanceStatus {
+  INTERESTED
+  GOING
+}
+
+model Event {
+  id          String        @id @default(cuid())
+  title       String
+  description String
+  category    EventCategory
+  city        String
+  country     String
+  venueName   String?
+  address     String?
+  latitude    Float?
+  longitude   Float?
+  startDate   DateTime
+  endDate     DateTime?
+  organizerId String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  organizer   User              @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  attendances EventAttendance[]
+
+  @@index([city, country])
+  @@index([category])
+  @@index([startDate])
+}
+
+model EventAttendance {
+  id        String           @id @default(cuid())
+  eventId   String
+  userId    String
+  status    AttendanceStatus
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@index([userId])
+}
+
+// ────────────────────────────────
+// COMMUNITIES
+// ────────────────────────────────
+
+model Community {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  category    String? // free-form for MVP; no fixed list specified yet
+  city        String?
+  country     String?
+  creatorId   String
+  createdAt   DateTime @default(now())
+
+  creator User              @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  members CommunityMember[]
+  posts   Post[] // prepped, unused by API yet
+
+  @@index([city, country])
+  @@index([category])
+}
+
+model CommunityMember {
+  communityId String
+  userId      String
+  joinedAt    DateTime @default(now())
+
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([communityId, userId])
+  @@index([userId])
+}
+
+// ────────────────────────────────
+// FUTURE: ARTISTS / BANDS / VENUES / ORGANIZATIONS
+// (schema-ready now, no API surface in the MVP)
+// ────────────────────────────────
+
+enum ProfileType {
+  ARTIST
+  BAND
+  VENUE
+  ORGANIZATION
+  NEWS_ORG
+}
+
+model Profile {
+  id        String      @id @default(cuid())
+  type      ProfileType
+  name      String
+  bio       String?
+  city      String?
+  country   String?
+  imageUrl  String?
+  ownerId   String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([type])
+  @@index([ownerId])
+}
+
+// ────────────────────────────────
+// NOTIFICATIONS
+// ────────────────────────────────
+
+enum NotificationType {
+  FOLLOW
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String // recipient
+  type      NotificationType
+  actorId   String // who triggered it (e.g. the new follower)
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user  User @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  actor User @relation("NotificationActor", fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+}
+
+// ────────────────────────────────
+// DIRECT MESSAGES
+// ────────────────────────────────
+// "Friends" are not a separate table — a friend is anyone in a mutual
+// Follow relationship (computed in friends.service.ts). Messaging is
+// restricted to friends, enforced in messages.service.ts.
+
+model Message {
+  id          String   @id @default(cuid())
+  senderId    String
+  recipientId String
+  content     String
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  sender    User @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  recipient User @relation("ReceivedMessages", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@index([senderId, recipientId, createdAt])
+  @@index([recipientId, senderId, createdAt])
+  @@index([recipientId, isRead])
+}

@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900;
+  }
+}
+
+/* Calm, slow-moving colored blobs behind the app — inspired by ink/light
+   moving in glass. Pure CSS, no images/libraries. Kept subtle (heavy blur,
+   low opacity, slow duration) so content stays easy to read, and disabled
+   entirely for anyone who prefers reduced motion. */
+.bg-blob {
+  position: fixed;
+  z-index: -10;
+  border-radius: 9999px;
+  filter: blur(70px);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.blob-a {
+  top: -12%;
+  left: -8%;
+  width: 32rem;
+  height: 32rem;
+  background: radial-gradient(circle, #6ee7b7, transparent 70%);
+  animation: drift-a 26s ease-in-out infinite;
+}
+
+.blob-b {
+  top: 15%;
+  right: -12%;
+  width: 28rem;
+  height: 28rem;
+  background: radial-gradient(circle, #93c5fd, transparent 70%);
+  animation: drift-b 30s ease-in-out infinite;
+}
+
+.blob-c {
+  bottom: -18%;
+  left: 28%;
+  width: 34rem;
+  height: 34rem;
+  background: radial-gradient(circle, #f9a8d4, transparent 70%);
+  animation: drift-a 34s ease-in-out infinite reverse;
+}
+
+@keyframes drift-a {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(3rem, 2rem) scale(1.08);
+  }
+}
+
+@keyframes drift-b {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-2.5rem, 1.5rem) scale(1.05);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blob-a,
+  .blob-b,
+  .blob-c {
+    animation: none;
+  }
+}

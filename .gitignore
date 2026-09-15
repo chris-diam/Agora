@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Build output
+backend/dist/
+frontend/dist/
+
+# Environment variables
+.env
+.env.local
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Prisma
+backend/prisma/dev.db
+
+# User-uploaded files (local-disk storage — see backend/src/middleware/upload.middleware.ts)
+backend/uploads/avatars/*
+!backend/uploads/avatars/.gitkeep
