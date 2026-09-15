@@ -1,4 +1,4 @@
-# Social Platform
+# Agora
 
 An alternative, transparency-first social platform: local/national/international news, music & cultural events, artists, and communities — with a deterministic, user-controlled feed instead of an engagement-maximizing algorithm.
 

@@ -19,9 +19,9 @@ export function Navbar() {
       <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
         <Link to="/" className="flex shrink-0 items-center gap-2 text-lg font-semibold text-gray-900">
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-900 text-sm text-white">
-            S
+            A
           </span>
-          <span className="hidden sm:inline">Social Platform</span>
+          <span className="hidden sm:inline">Agora</span>
         </Link>
 
         <SearchBar />

@@ -25,7 +25,7 @@ export const resolveMediaUrl = (url: string | null | undefined): string | null =
   return `${SOCKET_URL}${url}`;
 };
 
-const TOKEN_KEY = "social_platform_token";
+const TOKEN_KEY = "agora_token";
 
 export const getToken = (): string | null => localStorage.getItem(TOKEN_KEY);
 export const setToken = (token: string): void => localStorage.setItem(TOKEN_KEY, token);
