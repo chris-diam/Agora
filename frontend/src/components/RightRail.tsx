@@ -54,7 +54,7 @@ export function RightRail() {
         </div>
       </div>
 
-      <div className="rounded-2xl bg-gray-900 p-4 text-white shadow-sm">
+      <div className="rounded-2xl bg-agora-dark p-4 text-white shadow-sm">
         <h2 className="text-sm font-semibold">Nothing hidden</h2>
         <p className="mt-1 text-xs text-gray-300">
           No outrage ranking, no engagement-maximizing algorithm. You choose the feed, and every item says why it's

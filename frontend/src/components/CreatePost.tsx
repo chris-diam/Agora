@@ -88,7 +88,7 @@ export function CreatePost({ onCreated }: CreatePostProps) {
       <button
         type="submit"
         disabled={createPost.isPending || !content.trim()}
-        className="self-end rounded-full bg-emerald-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+        className="self-end rounded-full bg-agora px-4 py-1.5 text-sm font-medium text-white hover:bg-agora-hover disabled:opacity-50"
       >
         Post
       </button>

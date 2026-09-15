@@ -63,7 +63,7 @@ export function EventDetailsPage() {
                 onClick={() => setAttendance.mutate({ id: event.id, status: "GOING" })}
                 className={
                   event.viewerAttendanceStatus === "GOING"
-                    ? "rounded-full bg-emerald-100 px-3 py-1.5 text-sm text-emerald-800"
+                    ? "rounded-full bg-agora-light px-3 py-1.5 text-sm text-agora-dark"
                     : "rounded-full border border-gray-300 bg-white/70 px-3 py-1.5 text-sm hover:bg-white"
                 }
               >

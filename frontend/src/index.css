@@ -1,5 +1,17 @@
 @import "tailwindcss";
 
+/* Agora brand tokens — see /docs/brand/brand-guidelines.md. Exact hex from
+   the brand kit for the primary green and dark teal; -hover and -light are
+   derived shades for interactive/tint states the kit doesn't specify. */
+@theme {
+  --color-agora: #10b891;
+  --color-agora-hover: #0ea47e;
+  --color-agora-light: #e3f7f1;
+  --color-agora-dark: #0b2e2b;
+  --color-agora-text: #0b1f1e;
+  --color-agora-muted: #6b7c7a;
+}
+
 @layer base {
   body {
     @apply bg-gray-50 text-gray-900;
@@ -24,7 +36,7 @@
   left: -8%;
   width: 32rem;
   height: 32rem;
-  background: radial-gradient(circle, #6ee7b7, transparent 70%);
+  background: radial-gradient(circle, #10b891, transparent 70%);
   animation: drift-a 26s ease-in-out infinite;
 }
 

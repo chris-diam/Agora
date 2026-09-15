@@ -50,7 +50,7 @@ export function EventCard({ event }: { event: EventItem }) {
               onClick={() => setAttendance.mutate({ id: event.id, status: "GOING" })}
               className={
                 event.viewerAttendanceStatus === "GOING"
-                  ? "rounded-full bg-emerald-100 px-2.5 py-1 text-emerald-800"
+                  ? "rounded-full bg-agora-light px-2.5 py-1 text-agora-dark"
                   : "rounded-full border border-gray-300 bg-white/70 px-2.5 py-1 hover:bg-white"
               }
             >

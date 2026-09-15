@@ -42,7 +42,7 @@ export function ChatDock() {
           <button
             type="button"
             onClick={() => setShowPicker((value) => !value)}
-            className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-900 text-white shadow-lg shadow-gray-900/20 hover:bg-gray-800"
+            className="flex h-12 w-12 items-center justify-center rounded-full bg-agora-dark text-white shadow-lg shadow-gray-900/20 hover:bg-gray-800"
             aria-label="New chat"
           >
             <PencilIcon className="h-5 w-5" />

@@ -22,7 +22,7 @@ export function PostCard({ post, reason }: PostCardProps) {
   return (
     <article className="rounded-2xl border border-white/60 bg-white/70 p-4 shadow-sm shadow-gray-900/5 backdrop-blur-xl">
       {reason && (
-        <p className="mb-3 flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+        <p className="mb-3 flex items-center gap-1.5 rounded-full bg-agora-light px-3 py-1 text-xs font-medium text-agora-hover">
           {reason}
         </p>
       )}
@@ -47,7 +47,7 @@ export function PostCard({ post, reason }: PostCardProps) {
           type="button"
           onClick={() => likeMutation.mutate({ id: post.id, liked: Boolean(post.likedByViewer) })}
           disabled={!isAuthenticated}
-          className={post.likedByViewer ? "font-medium text-emerald-600" : "disabled:opacity-50"}
+          className={post.likedByViewer ? "font-medium text-agora" : "disabled:opacity-50"}
         >
           {post.likedByViewer ? "Liked" : "Like"} ({post.likesCount})
         </button>
@@ -116,7 +116,7 @@ function CommentSection({ postId }: { postId: string }) {
           <button
             type="submit"
             disabled={createComment.isPending || !content.trim()}
-            className="shrink-0 rounded-full bg-emerald-600 px-3 py-1.5 text-sm text-white hover:bg-emerald-700 disabled:opacity-50"
+            className="shrink-0 rounded-full bg-agora px-3 py-1.5 text-sm text-white hover:bg-agora-hover disabled:opacity-50"
           >
             Send
           </button>

@@ -71,7 +71,7 @@ export function ChatPopup({ userId, onClose, onMinimize }: ChatPopupProps) {
             <div key={message.id} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
               <div
                 className={`max-w-[80%] rounded-2xl px-3 py-1.5 text-sm ${
-                  isMine ? "bg-emerald-600 text-white" : "bg-gray-100 text-gray-900"
+                  isMine ? "bg-agora text-white" : "bg-gray-100 text-gray-900"
                 }`}
               >
                 {message.content}
@@ -92,7 +92,7 @@ export function ChatPopup({ userId, onClose, onMinimize }: ChatPopupProps) {
         <button
           type="submit"
           disabled={sendMessage.isPending || !content.trim()}
-          className="shrink-0 rounded-full bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+          className="shrink-0 rounded-full bg-agora px-3 py-1.5 text-sm font-medium text-white hover:bg-agora-hover disabled:opacity-50"
         >
           Send
         </button>

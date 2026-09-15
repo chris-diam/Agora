@@ -15,7 +15,7 @@ export function RegisterPage() {
       <RegisterForm />
       <p className="mt-4 text-sm text-gray-500">
         Already have an account?{" "}
-        <Link to="/login" className="text-emerald-600 hover:underline">
+        <Link to="/login" className="text-agora hover:underline">
           Log in
         </Link>
       </p>

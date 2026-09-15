@@ -40,7 +40,7 @@ export function EventsPage() {
         {isAuthenticated && (
           <Link
             to="/events/new"
-            className="rounded-full bg-emerald-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-emerald-700"
+            className="rounded-full bg-agora px-4 py-1.5 text-sm font-medium text-white hover:bg-agora-hover"
           >
             Create event
           </Link>

@@ -21,7 +21,7 @@ export function Sidebar() {
 
   const linkClasses = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
-      isActive ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-900/5"
+      isActive ? "bg-agora-dark text-white" : "text-gray-600 hover:bg-gray-900/5"
     }`;
 
   return (

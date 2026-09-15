@@ -76,7 +76,7 @@ export function CreateCommunityPage() {
         <button
           type="submit"
           disabled={createCommunity.isPending}
-          className="self-start rounded-full bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+          className="self-start rounded-full bg-agora px-4 py-2 text-sm font-medium text-white hover:bg-agora-hover disabled:opacity-50"
         >
           Create community
         </button>

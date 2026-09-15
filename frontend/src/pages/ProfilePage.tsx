@@ -104,7 +104,7 @@ function FollowButton({ userId, initiallyFollowing }: { userId: string; initiall
       className={`shrink-0 rounded-full px-3 py-1 text-sm font-medium ${
         isFollowing
           ? "border border-gray-300 bg-white/70 text-gray-700 hover:bg-white"
-          : "bg-emerald-600 text-white hover:bg-emerald-700"
+          : "bg-agora text-white hover:bg-agora-hover"
       }`}
     >
       {isFollowing ? "Unfollow" : "Follow"}
@@ -217,7 +217,7 @@ function ProfileEditPanel({ onDone }: { onDone: () => void }) {
               type="button"
               onClick={() => toggleInterest(interest.id)}
               className={`rounded-full px-3 py-1 text-xs ${
-                selectedInterestIds.includes(interest.id) ? "bg-emerald-600 text-white" : "bg-gray-100 text-gray-700"
+                selectedInterestIds.includes(interest.id) ? "bg-agora text-white" : "bg-gray-100 text-gray-700"
               }`}
             >
               {interest.name}
@@ -229,7 +229,7 @@ function ProfileEditPanel({ onDone }: { onDone: () => void }) {
         type="button"
         onClick={handleSave}
         disabled={updateProfile.isPending || setMyInterests.isPending}
-        className="self-start rounded-full bg-emerald-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+        className="self-start rounded-full bg-agora px-4 py-1.5 text-sm font-medium text-white hover:bg-agora-hover disabled:opacity-50"
       >
         Save changes
       </button>

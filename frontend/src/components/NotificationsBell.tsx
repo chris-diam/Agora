@@ -83,7 +83,7 @@ export function NotificationsBell() {
                       <button
                         type="button"
                         onClick={() => handleFollowBack(notification.actor.id)}
-                        className="shrink-0 rounded-full bg-emerald-600 px-3 py-1 text-xs font-medium text-white hover:bg-emerald-700"
+                        className="shrink-0 rounded-full bg-agora px-3 py-1 text-xs font-medium text-white hover:bg-agora-hover"
                       >
                         Follow back
                       </button>

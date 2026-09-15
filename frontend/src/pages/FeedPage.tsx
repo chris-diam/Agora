@@ -37,7 +37,7 @@ export function FeedPage() {
     <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
       <div className="flex min-w-0 flex-1 flex-col gap-4">
         <section className="rounded-3xl border border-white/60 bg-white/70 p-6 shadow-sm shadow-gray-900/5 backdrop-blur-xl">
-          <p className="text-xs font-semibold tracking-wide text-emerald-600 uppercase">
+          <p className="text-xs font-semibold tracking-wide text-agora uppercase">
             {today}
             {user?.city ? ` · ${user.city}` : ""}
           </p>
@@ -57,7 +57,7 @@ export function FeedPage() {
                   onClick={() => handleTabChange(tab.key)}
                   title={disabled ? "Log in to use this feed" : undefined}
                   className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
-                    feedType === tab.key ? "bg-emerald-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    feedType === tab.key ? "bg-agora text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   } ${disabled ? "opacity-40" : ""}`}
                 >
                   {tab.label}
@@ -73,7 +73,7 @@ export function FeedPage() {
                 aria-checked={explainReasons}
                 onClick={() => setExplainReasons((value) => !value)}
                 className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
-                  explainReasons ? "bg-emerald-600" : "bg-gray-300"
+                  explainReasons ? "bg-agora" : "bg-gray-300"
                 }`}
               >
                 <span
