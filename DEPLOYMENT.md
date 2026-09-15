@@ -82,7 +82,13 @@ Only needed if you want the "Sign in with Google" button to actually work:
 Render and Cloudflare Pages both support attaching a custom domain for free (you only pay if the domain itself isn't free). To use a genuinely free domain name instead of `*.pages.dev`:
 
 - [free-for.dev's domain section](https://free-for.dev/#/?id=domain) lists options like `eu.org` (manual review, real custom domain) or various "js.org"-style community subdomain services.
-- Once you have one, both Render and Cloudflare Pages have a "Custom Domains" tab where you add it and follow their DNS instructions (usually a CNAME record pointing at your `*.onrender.com` / `*.pages.dev` address).
+- [DigitalPlat Domains](https://domain.digitalplat.org) (operated by EdgeAlphix LLC) is one such service — free subdomains under `*.dpdns.org`, `*.qzz.io`, `*.us.kg`, `*.xx.kg`, or `*.qd.je`. It's a real, ToS/AUP-governed registrar (not a throwaway), so a name here (e.g. `agora.dpdns.org`) is fine to actually launch on. Steps:
+  1. Sign up at [dash.domain.digitalplat.org/auth/register](https://dash.domain.digitalplat.org/auth/register) and register a name, e.g. `agora.dpdns.org`.
+  2. It supports "bring your own DNS" — delegate the domain's nameservers to Cloudflare (add the domain to a free Cloudflare account, which gives you two nameservers; set those as the domain's NS records in the DigitalPlat dashboard). This hands you full DNS record control (CNAME, etc.), which a bare subdomain registrar alone wouldn't give you.
+  3. In Cloudflare's DNS tab for the zone, add a CNAME for the root (or `www`) pointing at the Cloudflare Pages `*.pages.dev` address, and a CNAME for `api` pointing at the Render `*.onrender.com` address.
+  4. Add both hostnames as custom domains in the Cloudflare Pages and Render dashboards respectively (each will verify via the CNAME and issue its own TLS cert).
+  5. Update `VITE_API_URL` (Cloudflare Pages) to `https://api.agora.dpdns.org/api` and `CORS_ORIGIN` (Render) to `https://agora.dpdns.org`, then redeploy both.
+- Whichever route you pick, both Render and Cloudflare Pages have a "Custom Domains" tab where you add the hostname and follow their DNS instructions (usually just a CNAME record).
 
 ## Local Docker verification
 

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 300">
+<g transform="translate(0 5) scale(.55)"><path fill="#10B891" d="M110 210V115C110 64.2 151.2 23 202 23S294 64.2 294 115v95h-58v-95c0-18.2-15.8-33-34-33s-34 14.8-34 33v95z"/></g>
+<circle cx="111" cy="116" r="13.75" fill="#10B891"/>
+<text x="235" y="165" font-family="Inter, Arial, sans-serif" font-size="112" font-weight="700" letter-spacing="-5" fill="#0B1F1E">Agora</text>
+<text x="239" y="216" font-family="Inter, Arial, sans-serif" font-size="22" letter-spacing="7" fill="#6B7C7A">PEOPLE  PLACES  PASSIONS</text>
+</svg>

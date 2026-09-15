@@ -17,9 +17,8 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-20 border-b border-white/50 bg-white/60 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
-        <Link to="/" className="flex shrink-0 items-center gap-2 text-lg font-semibold text-agora-text">
-          <img src="/logo-mark.svg" alt="" className="h-8 w-8" />
-          <span className="hidden sm:inline">Agora</span>
+        <Link to="/" className="flex shrink-0 items-center">
+          <img src="/logo-full.svg" alt="Agora" className="h-9 w-auto sm:h-10" />
         </Link>
 
         <SearchBar />
