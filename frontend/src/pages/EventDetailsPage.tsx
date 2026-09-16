@@ -11,7 +11,7 @@ export function EventDetailsPage() {
   const setAttendance = useSetAttendance();
   const removeAttendance = useRemoveAttendance();
 
-  if (isLoading) return <p className="text-gray-500">Loading event...</p>;
+  if (isLoading) return <p className="text-agora-muted">Loading event...</p>;
   if (isError || !data) return <p className="text-red-500">Event not found.</p>;
 
   const event = data.data;
@@ -25,22 +25,22 @@ export function EventDetailsPage() {
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-4">
-      <div className="rounded-3xl border border-white/60 bg-white/70 p-6 shadow-sm shadow-gray-900/5 backdrop-blur-xl">
+      <div className="rounded-3xl border border-agora-border bg-agora-surface/80 p-6 shadow-sm shadow-black/20 backdrop-blur-xl">
         <div className="mb-2 flex items-start justify-between gap-2">
-          <h1 className="text-2xl font-semibold text-gray-900">{event.title}</h1>
-          <span className="shrink-0 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs text-gray-600">
+          <h1 className="text-2xl font-semibold text-agora-text">{event.title}</h1>
+          <span className="shrink-0 rounded-full bg-agora-light px-2.5 py-0.5 text-xs text-agora-muted">
             {event.category}
           </span>
         </div>
-        <p className="mb-1 text-sm text-gray-500">
+        <p className="mb-1 text-sm text-agora-muted">
           {new Date(event.startDate).toLocaleString()}
           {event.endDate ? ` – ${new Date(event.endDate).toLocaleString()}` : ""}
         </p>
-        <p className="mb-3 text-sm text-gray-500">
+        <p className="mb-3 text-sm text-agora-muted">
           {[event.venueName, event.address, event.city, event.country].filter(Boolean).join(", ")}
         </p>
-        <p className="mb-4 whitespace-pre-line text-gray-800">{event.description}</p>
-        <p className="mb-4 text-sm text-gray-500">
+        <p className="mb-4 whitespace-pre-line text-agora-text">{event.description}</p>
+        <p className="mb-4 text-sm text-agora-muted">
           Organized by {event.organizer.displayName} · {event.attendeesCount} attending
         </p>
 
@@ -53,7 +53,7 @@ export function EventDetailsPage() {
                 className={
                   event.viewerAttendanceStatus === "INTERESTED"
                     ? "rounded-full bg-amber-100 px-3 py-1.5 text-sm text-amber-800"
-                    : "rounded-full border border-gray-300 bg-white/70 px-3 py-1.5 text-sm hover:bg-white"
+                    : "rounded-full border border-agora-border bg-agora-surface/80 px-3 py-1.5 text-sm hover:bg-agora-surface"
                 }
               >
                 Interested
@@ -63,8 +63,8 @@ export function EventDetailsPage() {
                 onClick={() => setAttendance.mutate({ id: event.id, status: "GOING" })}
                 className={
                   event.viewerAttendanceStatus === "GOING"
-                    ? "rounded-full bg-agora-light px-3 py-1.5 text-sm text-agora-dark"
-                    : "rounded-full border border-gray-300 bg-white/70 px-3 py-1.5 text-sm hover:bg-white"
+                    ? "rounded-full bg-agora px-3 py-1.5 text-sm text-agora-on"
+                    : "rounded-full border border-agora-border bg-agora-surface/80 px-3 py-1.5 text-sm hover:bg-agora-surface"
                 }
               >
                 Going
@@ -73,7 +73,7 @@ export function EventDetailsPage() {
                 <button
                   type="button"
                   onClick={() => removeAttendance.mutate(event.id)}
-                  className="text-sm text-gray-400 underline"
+                  className="text-sm text-agora-dim underline"
                 >
                   Clear
                 </button>

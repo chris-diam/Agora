@@ -1,36 +1,74 @@
-import { NavLink } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useEvents } from "../hooks/useEvents";
 import { useUnreadMessageCount } from "../hooks/useMessages";
-import { CalendarIcon, ChatIcon, HomeIcon, UserCircleIcon, UserHeartIcon, UsersIcon } from "./icons";
+import {
+  BookmarkIcon,
+  CalendarIcon,
+  ChatIcon,
+  HomeIcon,
+  MicIcon,
+  MusicNoteIcon,
+  NewsIcon,
+  PaletteIcon,
+  PinIcon,
+  UserCircleIcon,
+  UserHeartIcon,
+  UsersIcon,
+} from "./icons";
 
 const NAV_ITEMS = [
-  { to: "/feed", label: "Feed", Icon: HomeIcon },
-  { to: "/events", label: "Events", Icon: CalendarIcon },
+  { to: "/news", label: "News", Icon: NewsIcon },
+  { to: "/events", label: "Events", Icon: CalendarIcon, countKey: "events" as const },
+  { to: "/music", label: "Music", Icon: MusicNoteIcon },
+  { to: "/arts-culture", label: "Arts & culture", Icon: PaletteIcon },
   { to: "/communities", label: "Communities", Icon: UsersIcon },
+  { to: "/artists", label: "Artists", Icon: MicIcon },
   { to: "/friends", label: "Friends", Icon: UserHeartIcon },
 ];
 
 export function Sidebar() {
   const { user } = useAuth();
-  // Real count, not a decorative stat: upcoming events in the viewer's own
-  // city, reusing the same filter the Events page and local feed use.
+  const location = useLocation();
+  // Real counts, not decorative stats: upcoming events in the viewer's own
+  // city (for the city widget) and overall (for the Events nav badge).
   const { data: upcomingInCity } = useEvents({ city: user?.city ?? undefined, limit: 1 });
+  const { data: upcomingOverall } = useEvents({ limit: 1 });
   const { data: unreadMessages } = useUnreadMessageCount();
   const unreadMessageCount = unreadMessages?.data.count ?? 0;
+  const upcomingEventsCount = upcomingOverall?.pagination?.totalItems ?? 0;
+
+  // "/feed" and "/feed?type=local" share a pathname, so NavLink's built-in
+  // isActive (which ignores search unless `to` itself includes one) can't
+  // tell them apart — computed manually instead.
+  const isLocalActive = location.pathname === "/feed" && new URLSearchParams(location.search).get("type") === "local";
+  const isFeedActive = location.pathname === "/feed" && !isLocalActive;
 
   const linkClasses = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
-      isActive ? "bg-agora-dark text-white" : "text-gray-600 hover:bg-gray-900/5"
+      isActive ? "bg-agora text-agora-on" : "text-agora-muted hover:bg-white/5"
     }`;
 
   return (
     <aside className="hidden w-60 shrink-0 flex-col gap-4 lg:flex">
-      <nav className="flex flex-col gap-1 rounded-2xl border border-white/60 bg-white/70 p-3 shadow-sm shadow-gray-900/5 backdrop-blur-xl">
-        {NAV_ITEMS.map(({ to, label, Icon }) => (
+      <nav className="flex flex-col gap-1 rounded-2xl border border-agora-border bg-agora-surface/80 p-3 shadow-sm shadow-black/20 backdrop-blur-xl">
+        <NavLink to="/feed" className={linkClasses({ isActive: isFeedActive })}>
+          <HomeIcon className="h-5 w-5 shrink-0" />
+          Feed
+        </NavLink>
+        <Link to="/feed?type=local" className={linkClasses({ isActive: isLocalActive })}>
+          <PinIcon className="h-5 w-5 shrink-0" />
+          Local
+        </Link>
+        {NAV_ITEMS.map(({ to, label, Icon, countKey }) => (
           <NavLink key={to} to={to} className={linkClasses}>
             <Icon className="h-5 w-5 shrink-0" />
             {label}
+            {countKey === "events" && upcomingEventsCount > 0 && (
+              <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-agora-light px-1 text-xs font-medium text-agora-muted">
+                {upcomingEventsCount > 99 ? "99+" : upcomingEventsCount}
+              </span>
+            )}
           </NavLink>
         ))}
         <NavLink to="/messages" className={linkClasses}>
@@ -43,18 +81,24 @@ export function Sidebar() {
           )}
         </NavLink>
         {user && (
-          <NavLink to={`/profile/${user.id}`} className={linkClasses}>
-            <UserCircleIcon className="h-5 w-5 shrink-0" />
-            Profile
-          </NavLink>
+          <>
+            <NavLink to="/saved" className={linkClasses}>
+              <BookmarkIcon className="h-5 w-5 shrink-0" />
+              Saved
+            </NavLink>
+            <NavLink to={`/profile/${user.id}`} className={linkClasses}>
+              <UserCircleIcon className="h-5 w-5 shrink-0" />
+              Profile
+            </NavLink>
+          </>
         )}
       </nav>
 
       {user?.city && (
-        <div className="rounded-2xl border border-white/60 bg-white/70 p-4 shadow-sm shadow-gray-900/5 backdrop-blur-xl">
-          <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-400">Your city</p>
-          <p className="text-lg font-semibold text-gray-900">{user.city}</p>
-          <p className="text-sm text-gray-500">
+        <div className="rounded-2xl border border-agora-border bg-agora-surface/80 p-4 shadow-sm shadow-black/20 backdrop-blur-xl">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-agora-dim">Your city pulse</p>
+          <p className="text-lg font-semibold text-agora-text">{user.city}</p>
+          <p className="text-sm text-agora-muted">
             {upcomingInCity?.pagination?.totalItems ?? 0} upcoming event
             {upcomingInCity?.pagination?.totalItems === 1 ? "" : "s"}
           </p>

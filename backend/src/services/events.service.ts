@@ -49,7 +49,9 @@ const validateDateRange = (startDate: Date, endDate?: Date | null) => {
 export interface ListEventsFilters {
   city?: string;
   country?: string;
-  category?: EventCategory;
+  // A single category or a list — e.g. the "Arts & culture" section groups
+  // several categories into one feed.
+  category?: EventCategory | EventCategory[];
   date?: string; // YYYY-MM-DD
 }
 
@@ -58,10 +60,16 @@ export const listEvents = async (
   { page, limit, skip }: PaginationParams,
   viewerId?: string
 ) => {
+  const categories = Array.isArray(filters.category)
+    ? filters.category
+    : filters.category
+      ? [filters.category]
+      : undefined;
+
   const where: Prisma.EventWhereInput = {
     ...(filters.city ? { city: { equals: filters.city, mode: "insensitive" } } : {}),
     ...(filters.country ? { country: { equals: filters.country, mode: "insensitive" } } : {}),
-    ...(filters.category ? { category: filters.category } : {}),
+    ...(categories ? { category: { in: categories } } : {}),
   };
 
   if (filters.date) {

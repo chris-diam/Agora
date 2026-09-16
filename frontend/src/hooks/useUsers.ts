@@ -4,6 +4,9 @@ import * as usersApi from "../api/users";
 export const useUser = (id: string) =>
   useQuery({ queryKey: ["users", id], queryFn: () => usersApi.getUser(id), enabled: Boolean(id) });
 
+export const useArtists = (params: usersApi.ListArtistsParams = {}) =>
+  useQuery({ queryKey: ["users", "artists", params], queryFn: () => usersApi.listArtists(params) });
+
 export const useFollowUser = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -24,7 +27,12 @@ export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: usersApi.UpdateProfileInput) => usersApi.updateMe(input),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["me"] }),
+    onSuccess: () => {
+      // Refresh both the "me" cache and this user's own public profile
+      // cache (the profile page reads via useUser, a separate query key).
+      queryClient.invalidateQueries({ queryKey: ["me"] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
   });
 };
 

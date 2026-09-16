@@ -2,7 +2,7 @@ import { PostCategory, Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { AppError } from "../utils/AppError";
 import { buildPaginationMeta, PaginationParams } from "../utils/pagination";
-import { formatPost, getLikedPostIds, postInclude, PostWithRelations } from "./posts.service";
+import { formatPost, getLikedPostIds, getSavedPostIds, postInclude, PostWithRelations } from "./posts.service";
 
 // Every feed returns { post, reason } pairs — the core transparency
 // requirement: nothing is ranked by an opaque score, and every item can say
@@ -34,13 +34,14 @@ export const getFollowingFeed = async (userId: string, { page, limit, skip }: Pa
     prisma.post.count({ where }),
   ]);
 
-  const likedPostIds = await getLikedPostIds(
-    userId,
-    rows.map((row) => row.id)
-  );
+  const postIds = rows.map((row) => row.id);
+  const [likedPostIds, savedPostIds] = await Promise.all([
+    getLikedPostIds(userId, postIds),
+    getSavedPostIds(userId, postIds),
+  ]);
 
   const items: FeedItem[] = rows.map((row) => ({
-    post: formatPost(row, likedPostIds),
+    post: formatPost(row, likedPostIds, savedPostIds),
     reason: `You follow ${row.author.displayName}`,
   }));
 
@@ -57,13 +58,14 @@ export const getChronologicalFeed = async ({ page, limit, skip }: PaginationPara
     prisma.post.count(),
   ]);
 
-  const likedPostIds = await getLikedPostIds(
-    viewerId,
-    rows.map((row) => row.id)
-  );
+  const postIds = rows.map((row) => row.id);
+  const [likedPostIds, savedPostIds] = await Promise.all([
+    getLikedPostIds(viewerId, postIds),
+    getSavedPostIds(viewerId, postIds),
+  ]);
 
   const items: FeedItem[] = rows.map((row) => ({
-    post: formatPost(row, likedPostIds),
+    post: formatPost(row, likedPostIds, savedPostIds),
     reason: "Shown in chronological order — no ranking algorithm applied",
   }));
 
@@ -102,15 +104,16 @@ export const getInterestFeed = async (userId: string, { page, limit, skip }: Pag
     prisma.post.count({ where }),
   ]);
 
-  const likedPostIds = await getLikedPostIds(
-    userId,
-    rows.map((row) => row.id)
-  );
+  const postIds = rows.map((row) => row.id);
+  const [likedPostIds, savedPostIds] = await Promise.all([
+    getLikedPostIds(userId, postIds),
+    getSavedPostIds(userId, postIds),
+  ]);
 
   const items: FeedItem[] = rows.map((row) => {
     const matchingNames = categoryToInterestNames.get(row.category) ?? [];
     return {
-      post: formatPost(row, likedPostIds),
+      post: formatPost(row, likedPostIds, savedPostIds),
       reason: `Matches your interest in ${matchingNames.join(", ")}`,
     };
   });
@@ -186,14 +189,21 @@ export const getLocalFeed = async (userId: string, { page, limit, skip }: Pagina
     });
   }
 
-  const likedPostIds = await getLikedPostIds(
-    userId,
-    [...cityRows, ...countryRows].map((row) => row.id)
-  );
+  const allIds = [...cityRows, ...countryRows].map((row) => row.id);
+  const [likedPostIds, savedPostIds] = await Promise.all([
+    getLikedPostIds(userId, allIds),
+    getSavedPostIds(userId, allIds),
+  ]);
 
   const items: FeedItem[] = [
-    ...cityRows.map((row) => ({ post: formatPost(row, likedPostIds), reason: `From your city (${city})` })),
-    ...countryRows.map((row) => ({ post: formatPost(row, likedPostIds), reason: `From your country (${country})` })),
+    ...cityRows.map((row) => ({
+      post: formatPost(row, likedPostIds, savedPostIds),
+      reason: `From your city (${city})`,
+    })),
+    ...countryRows.map((row) => ({
+      post: formatPost(row, likedPostIds, savedPostIds),
+      reason: `From your country (${country})`,
+    })),
   ];
 
   return { items, pagination: buildPaginationMeta(page, limit, totalItems) };

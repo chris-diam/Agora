@@ -3,8 +3,10 @@ import type { FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useComments, useCreateComment, useDeleteComment } from "../hooks/useComments";
-import { useDeletePost, useLikePost } from "../hooks/usePosts";
+import { useDeletePost, useLikePost, useSavePost } from "../hooks/usePosts";
 import { Avatar } from "./Avatar";
+import { BookmarkIcon } from "./icons";
+import { PostMedia } from "./PostMedia";
 import type { Post } from "../types";
 
 interface PostCardProps {
@@ -15,12 +17,13 @@ interface PostCardProps {
 export function PostCard({ post, reason }: PostCardProps) {
   const { user, isAuthenticated } = useAuth();
   const likeMutation = useLikePost();
+  const saveMutation = useSavePost();
   const deleteMutation = useDeletePost();
   const [showComments, setShowComments] = useState(false);
   const isOwner = user?.id === post.authorId;
 
   return (
-    <article className="rounded-2xl border border-white/60 bg-white/70 p-4 shadow-sm shadow-gray-900/5 backdrop-blur-xl">
+    <article className="rounded-2xl border border-agora-border bg-agora-surface/80 p-4 shadow-sm shadow-black/20 backdrop-blur-xl transition-transform duration-200 ease-out hover:scale-[1.015] hover:shadow-lg hover:shadow-black/30 motion-reduce:transition-none motion-reduce:hover:scale-100">
       {reason && (
         <p className="mb-3 flex items-center gap-1.5 rounded-full bg-agora-light px-3 py-1 text-xs font-medium text-agora-hover">
           {reason}
@@ -30,19 +33,20 @@ export function PostCard({ post, reason }: PostCardProps) {
         <Link to={`/profile/${post.author.id}`} className="flex items-center gap-2.5">
           <Avatar name={post.author.displayName} imageUrl={post.author.profileImageUrl} size="sm" />
           <span>
-            <span className="font-medium text-gray-900 hover:underline">{post.author.displayName}</span>{" "}
-            <span className="text-xs text-gray-400">@{post.author.username}</span>
+            <span className="font-medium text-agora-text hover:underline">{post.author.displayName}</span>{" "}
+            <span className="text-xs text-agora-dim">@{post.author.username}</span>
           </span>
         </Link>
-        <span className="shrink-0 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs text-gray-600">
+        <span className="shrink-0 rounded-full bg-agora-light px-2.5 py-0.5 text-xs text-agora-muted">
           {post.category}
         </span>
       </div>
-      <p className="mb-3 whitespace-pre-line text-gray-800">{post.content}</p>
+      <p className="mb-3 whitespace-pre-line text-agora-text">{post.content}</p>
+      <PostMedia mediaUrl={post.mediaUrl} mediaType={post.mediaType} />
       {(post.city || post.country) && (
-        <p className="mb-2 text-xs text-gray-400">{[post.city, post.country].filter(Boolean).join(", ")}</p>
+        <p className="mb-2 text-xs text-agora-dim">{[post.city, post.country].filter(Boolean).join(", ")}</p>
       )}
-      <div className="flex items-center gap-4 text-sm text-gray-500">
+      <div className="flex items-center gap-4 text-sm text-agora-muted">
         <button
           type="button"
           onClick={() => likeMutation.mutate({ id: post.id, liked: Boolean(post.likedByViewer) })}
@@ -54,15 +58,23 @@ export function PostCard({ post, reason }: PostCardProps) {
         <button type="button" onClick={() => setShowComments((value) => !value)}>
           Comments ({post.commentsCount})
         </button>
-        {isOwner && (
+        <span className="ml-auto flex items-center gap-3">
           <button
             type="button"
-            onClick={() => deleteMutation.mutate(post.id)}
-            className="ml-auto text-red-500 hover:text-red-600"
+            onClick={() => saveMutation.mutate({ id: post.id, saved: Boolean(post.savedByViewer) })}
+            disabled={!isAuthenticated}
+            className={`flex items-center gap-1 ${post.savedByViewer ? "text-agora" : ""} disabled:opacity-50`}
+            aria-label={post.savedByViewer ? "Unsave post" : "Save post"}
           >
-            Delete
+            <BookmarkIcon className="h-4 w-4" filled={post.savedByViewer} />
+            {post.savedByViewer ? "Saved" : "Save"}
           </button>
-        )}
+          {isOwner && (
+            <button type="button" onClick={() => deleteMutation.mutate(post.id)} className="text-red-500 hover:text-red-600">
+              Delete
+            </button>
+          )}
+        </span>
       </div>
       {showComments && <CommentSection postId={post.id} />}
     </article>
@@ -84,14 +96,14 @@ function CommentSection({ postId }: { postId: string }) {
   };
 
   return (
-    <div className="mt-3 flex flex-col gap-2 border-t border-gray-900/10 pt-3">
-      {isLoading && <p className="text-xs text-gray-400">Loading comments...</p>}
+    <div className="mt-3 flex flex-col gap-2 border-t border-agora-border pt-3">
+      {isLoading && <p className="text-xs text-agora-dim">Loading comments...</p>}
       {(data?.data ?? []).map((comment) => (
         <div key={comment.id} className="flex items-start gap-2 text-sm">
           <Avatar name={comment.author.displayName} imageUrl={comment.author.profileImageUrl} size="sm" />
           <p className="flex-1">
-            <span className="font-medium text-gray-900">{comment.author.displayName}</span>{" "}
-            <span className="text-gray-700">{comment.content}</span>
+            <span className="font-medium text-agora-text">{comment.author.displayName}</span>{" "}
+            <span className="text-agora-muted">{comment.content}</span>
           </p>
           {user?.id === comment.authorId && (
             <button
@@ -104,19 +116,19 @@ function CommentSection({ postId }: { postId: string }) {
           )}
         </div>
       ))}
-      {(data?.data?.length ?? 0) === 0 && !isLoading && <p className="text-xs text-gray-400">No comments yet.</p>}
+      {(data?.data?.length ?? 0) === 0 && !isLoading && <p className="text-xs text-agora-dim">No comments yet.</p>}
       {isAuthenticated && (
         <form onSubmit={handleSubmit} className="mt-1 flex gap-2">
           <input
             value={content}
             onChange={(event) => setContent(event.target.value)}
             placeholder="Write a comment..."
-            className="w-full rounded-xl border border-gray-200 bg-white/80 px-3 py-1.5 text-sm focus:ring-2 focus:ring-gray-900/10 focus:outline-none"
+            className="w-full rounded-xl border border-agora-border bg-agora-surface px-3 py-1.5 text-sm focus:ring-2 focus:ring-agora/30 focus:outline-none"
           />
           <button
             type="submit"
             disabled={createComment.isPending || !content.trim()}
-            className="shrink-0 rounded-full bg-agora px-3 py-1.5 text-sm text-white hover:bg-agora-hover disabled:opacity-50"
+            className="shrink-0 rounded-full bg-agora px-3 py-1.5 text-sm text-agora-on hover:bg-agora-hover disabled:opacity-50"
           >
             Send
           </button>

@@ -91,8 +91,11 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
 // property is compatible. Accepting T extends object sidesteps that.
 export const buildQuery = <T extends object>(params: T): string => {
   const search = new URLSearchParams();
-  for (const [key, value] of Object.entries(params) as [string, string | number | undefined][]) {
-    if (value !== undefined && value !== "") search.set(key, String(value));
+  for (const [key, value] of Object.entries(params) as [string, string | number | string[] | undefined][]) {
+    if (value === undefined || value === "") continue;
+    // Arrays (e.g. a multi-category filter) join as comma-separated —
+    // String([a,b]) === "a,b" — matching what the backend's validators expect.
+    search.set(key, Array.isArray(value) ? value.join(",") : String(value));
   }
   const qs = search.toString();
   return qs ? `?${qs}` : "";

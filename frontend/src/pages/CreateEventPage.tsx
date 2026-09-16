@@ -54,17 +54,17 @@ export function CreateEventPage() {
 
   return (
     <div className="mx-auto max-w-xl">
-      <h1 className="mb-4 text-xl font-semibold text-gray-900">Create event</h1>
+      <h1 className="mb-4 text-xl font-semibold text-agora-text">Create event</h1>
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col gap-3 rounded-2xl border border-white/60 bg-white/70 p-6 shadow-sm shadow-gray-900/5 backdrop-blur-xl"
+        className="flex flex-col gap-3 rounded-2xl border border-agora-border bg-agora-surface/80 p-6 shadow-sm shadow-black/20 backdrop-blur-xl"
       >
         <input
           value={title}
           onChange={(event) => setTitle(event.target.value)}
           placeholder="Title"
           required
-          className="rounded-xl border border-gray-200 bg-white/80 p-2 text-sm focus:ring-2 focus:ring-gray-900/10 focus:outline-none"
+          className="rounded-xl border border-agora-border bg-agora-surface p-2 text-sm focus:ring-2 focus:ring-agora/30 focus:outline-none"
         />
         <textarea
           value={description}
@@ -72,12 +72,12 @@ export function CreateEventPage() {
           placeholder="Description"
           required
           rows={4}
-          className="rounded-xl border border-gray-200 bg-white/80 p-2 text-sm focus:ring-2 focus:ring-gray-900/10 focus:outline-none"
+          className="rounded-xl border border-agora-border bg-agora-surface p-2 text-sm focus:ring-2 focus:ring-agora/30 focus:outline-none"
         />
         <select
           value={category}
           onChange={(event) => setCategory(event.target.value as EventCategory)}
-          className="rounded-xl border border-gray-200 bg-white/80 p-2 text-sm focus:ring-2 focus:ring-gray-900/10 focus:outline-none"
+          className="rounded-xl border border-agora-border bg-agora-surface p-2 text-sm focus:ring-2 focus:ring-agora/30 focus:outline-none"
         >
           {EVENT_CATEGORIES.map((option) => (
             <option key={option} value={option}>
@@ -91,14 +91,14 @@ export function CreateEventPage() {
             onChange={(event) => setCity(event.target.value)}
             placeholder="City"
             required
-            className="w-full rounded-xl border border-gray-200 bg-white/80 p-2 text-sm focus:ring-2 focus:ring-gray-900/10 focus:outline-none"
+            className="w-full rounded-xl border border-agora-border bg-agora-surface p-2 text-sm focus:ring-2 focus:ring-agora/30 focus:outline-none"
           />
           <input
             value={country}
             onChange={(event) => setCountry(event.target.value)}
             placeholder="Country"
             required
-            className="w-full rounded-xl border border-gray-200 bg-white/80 p-2 text-sm focus:ring-2 focus:ring-gray-900/10 focus:outline-none"
+            className="w-full rounded-xl border border-agora-border bg-agora-surface p-2 text-sm focus:ring-2 focus:ring-agora/30 focus:outline-none"
           />
         </div>
         <div className="flex gap-2">
@@ -106,33 +106,33 @@ export function CreateEventPage() {
             value={venueName}
             onChange={(event) => setVenueName(event.target.value)}
             placeholder="Venue (optional)"
-            className="w-full rounded-xl border border-gray-200 bg-white/80 p-2 text-sm focus:ring-2 focus:ring-gray-900/10 focus:outline-none"
+            className="w-full rounded-xl border border-agora-border bg-agora-surface p-2 text-sm focus:ring-2 focus:ring-agora/30 focus:outline-none"
           />
           <input
             value={address}
             onChange={(event) => setAddress(event.target.value)}
             placeholder="Address (optional)"
-            className="w-full rounded-xl border border-gray-200 bg-white/80 p-2 text-sm focus:ring-2 focus:ring-gray-900/10 focus:outline-none"
+            className="w-full rounded-xl border border-agora-border bg-agora-surface p-2 text-sm focus:ring-2 focus:ring-agora/30 focus:outline-none"
           />
         </div>
         <div className="flex gap-2">
-          <label className="flex w-full flex-col text-sm text-gray-600">
+          <label className="flex w-full flex-col text-sm text-agora-muted">
             Start
             <input
               type="datetime-local"
               value={startDate}
               onChange={(event) => setStartDate(event.target.value)}
               required
-              className="rounded border border-gray-300 p-2"
+              className="rounded border border-agora-border p-2"
             />
           </label>
-          <label className="flex w-full flex-col text-sm text-gray-600">
+          <label className="flex w-full flex-col text-sm text-agora-muted">
             End (optional)
             <input
               type="datetime-local"
               value={endDate}
               onChange={(event) => setEndDate(event.target.value)}
-              className="rounded border border-gray-300 p-2"
+              className="rounded border border-agora-border p-2"
             />
           </label>
         </div>
@@ -140,7 +140,7 @@ export function CreateEventPage() {
         <button
           type="submit"
           disabled={createEvent.isPending}
-          className="self-start rounded-full bg-agora px-4 py-2 text-sm font-medium text-white hover:bg-agora-hover disabled:opacity-50"
+          className="self-start rounded-full bg-agora px-4 py-2 text-sm font-medium text-agora-on hover:bg-agora-hover disabled:opacity-50"
         >
           Create event
         </button>

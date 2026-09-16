@@ -1,21 +1,7 @@
-import { useState } from "react";
-import type { FormEvent } from "react";
+import { useRef, useState } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 import { useCreatePost } from "../hooks/usePosts";
-import type { PostCategory } from "../types";
-
-const CATEGORIES: PostCategory[] = [
-  "GENERAL",
-  "LOCAL_NEWS",
-  "NATIONAL_NEWS",
-  "WORLD_NEWS",
-  "MUSIC",
-  "ART",
-  "CULTURE",
-  "THEATRE",
-  "CINEMA",
-  "TECHNOLOGY",
-  "SCIENCE",
-];
+import { CameraIcon, CloseIcon, LinkIcon } from "./icons";
 
 interface CreatePostProps {
   onCreated?: () => void;
@@ -23,10 +9,34 @@ interface CreatePostProps {
 
 export function CreatePost({ onCreated }: CreatePostProps) {
   const [content, setContent] = useState("");
-  const [category, setCategory] = useState<PostCategory>("GENERAL");
-  const [city, setCity] = useState("");
-  const [country, setCountry] = useState("");
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [mediaPreviewUrl, setMediaPreviewUrl] = useState<string | null>(null);
+  const [showLinkInput, setShowLinkInput] = useState(false);
+  const [linkUrl, setLinkUrl] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const createPost = useCreatePost();
+
+  const clearMedia = () => {
+    setMediaFile(null);
+    if (mediaPreviewUrl) URL.revokeObjectURL(mediaPreviewUrl);
+    setMediaPreviewUrl(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setLinkUrl("");
+    setShowLinkInput(false);
+    setMediaFile(file);
+    if (mediaPreviewUrl) URL.revokeObjectURL(mediaPreviewUrl);
+    setMediaPreviewUrl(URL.createObjectURL(file));
+  };
+
+  const handleToggleLinkInput = () => {
+    clearMedia();
+    setShowLinkInput((value) => !value);
+  };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -34,22 +44,21 @@ export function CreatePost({ onCreated }: CreatePostProps) {
 
     await createPost.mutateAsync({
       content: content.trim(),
-      category,
-      city: city.trim() || undefined,
-      country: country.trim() || undefined,
+      mediaFile: mediaFile ?? undefined,
+      linkUrl: linkUrl.trim() || undefined,
     });
 
     setContent("");
-    setCity("");
-    setCountry("");
-    setCategory("GENERAL");
+    clearMedia();
+    setShowLinkInput(false);
+    setLinkUrl("");
     onCreated?.();
   };
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-2 rounded-2xl border border-white/60 bg-white/70 p-4 shadow-sm shadow-gray-900/5 backdrop-blur-xl"
+      className="flex flex-col gap-3 rounded-2xl border border-agora-border bg-agora-surface/80 p-4 shadow-sm shadow-black/20 backdrop-blur-xl"
     >
       <textarea
         value={content}
@@ -57,41 +66,66 @@ export function CreatePost({ onCreated }: CreatePostProps) {
         placeholder="What's happening?"
         rows={3}
         maxLength={5000}
-        className="w-full rounded-xl border border-gray-200 bg-white/80 p-2 text-sm focus:ring-2 focus:ring-gray-900/10 focus:outline-none"
+        className="w-full rounded-xl border border-agora-border bg-agora-surface p-2 text-sm focus:ring-2 focus:ring-agora/30 focus:outline-none"
       />
-      <div className="flex flex-wrap gap-2">
-        <select
-          value={category}
-          onChange={(event) => setCategory(event.target.value as PostCategory)}
-          className="rounded-xl border border-gray-200 bg-white/80 p-1.5 text-sm focus:ring-2 focus:ring-gray-900/10 focus:outline-none"
+
+      {mediaFile && mediaPreviewUrl && (
+        <div className="relative w-fit">
+          {mediaFile.type.startsWith("video/") ? (
+            <video src={mediaPreviewUrl} className="max-h-48 rounded-xl" controls />
+          ) : (
+            <img src={mediaPreviewUrl} alt="" className="max-h-48 rounded-xl" />
+          )}
+          <button
+            type="button"
+            onClick={clearMedia}
+            className="absolute top-1.5 right-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
+            aria-label="Remove attachment"
+          >
+            <CloseIcon className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
+
+      {showLinkInput && (
+        <input
+          value={linkUrl}
+          onChange={(event) => setLinkUrl(event.target.value)}
+          placeholder="Paste a YouTube or other link"
+          className="w-full rounded-xl border border-agora-border bg-agora-surface p-2 text-sm focus:ring-2 focus:ring-agora/30 focus:outline-none"
+        />
+      )}
+
+      <div className="flex items-center gap-1">
+        <input ref={fileInputRef} type="file" accept="image/*,video/*" onChange={handleFileChange} className="hidden" />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm text-agora-muted hover:bg-white/5"
+          title="Add a photo or video"
         >
-          {CATEGORIES.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
-        <input
-          value={city}
-          onChange={(event) => setCity(event.target.value)}
-          placeholder="City (optional)"
-          className="rounded-xl border border-gray-200 bg-white/80 p-1.5 text-sm focus:ring-2 focus:ring-gray-900/10 focus:outline-none"
-        />
-        <input
-          value={country}
-          onChange={(event) => setCountry(event.target.value)}
-          placeholder="Country (optional)"
-          className="rounded-xl border border-gray-200 bg-white/80 p-1.5 text-sm focus:ring-2 focus:ring-gray-900/10 focus:outline-none"
-        />
+          <CameraIcon className="h-4.5 w-4.5" />
+        </button>
+        <button
+          type="button"
+          onClick={handleToggleLinkInput}
+          className={`flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm hover:bg-white/5 ${
+            showLinkInput ? "text-agora" : "text-agora-muted"
+          }`}
+          title="Add a link"
+        >
+          <LinkIcon className="h-4.5 w-4.5" />
+        </button>
+
+        <button
+          type="submit"
+          disabled={createPost.isPending || !content.trim()}
+          className="ml-auto rounded-full bg-agora px-4 py-1.5 text-sm font-medium text-agora-on hover:bg-agora-hover disabled:opacity-50"
+        >
+          Post
+        </button>
       </div>
       {createPost.isError && <p className="text-sm text-red-500">{createPost.error.message}</p>}
-      <button
-        type="submit"
-        disabled={createPost.isPending || !content.trim()}
-        className="self-end rounded-full bg-agora px-4 py-1.5 text-sm font-medium text-white hover:bg-agora-hover disabled:opacity-50"
-      >
-        Post
-      </button>
     </form>
   );
 }

@@ -3,8 +3,8 @@ import type { QueryClient } from "@tanstack/react-query";
 import * as eventsApi from "../api/events";
 import type { AttendanceStatus } from "../types";
 
-export const useEvents = (params: eventsApi.ListEventsParams) =>
-  useQuery({ queryKey: ["events", params], queryFn: () => eventsApi.listEvents(params) });
+export const useEvents = (params: eventsApi.ListEventsParams, enabled = true) =>
+  useQuery({ queryKey: ["events", params], queryFn: () => eventsApi.listEvents(params), enabled });
 
 export const useEvent = (id: string) =>
   useQuery({ queryKey: ["events", id], queryFn: () => eventsApi.getEvent(id), enabled: Boolean(id) });

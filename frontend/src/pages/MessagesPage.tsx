@@ -9,12 +9,12 @@ export function MessagesPage() {
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-4">
-      <h1 className="text-xl font-semibold text-gray-900">Messages</h1>
+      <h1 className="text-xl font-semibold text-agora-text">Messages</h1>
 
-      {isLoading && <p className="text-gray-500">Loading conversations...</p>}
+      {isLoading && <p className="text-agora-muted">Loading conversations...</p>}
       {isError && <p className="text-red-500">Could not load conversations.</p>}
       {!isLoading && !isError && conversations.length === 0 && (
-        <p className="text-gray-500">No conversations yet — message a friend from your Friends list.</p>
+        <p className="text-agora-muted">No conversations yet — message a friend from your Friends list.</p>
       )}
 
       <div className="flex flex-col gap-2">
@@ -23,12 +23,12 @@ export function MessagesPage() {
             key={partner.id}
             type="button"
             onClick={() => openChat(partner.id)}
-            className="flex items-center gap-3 rounded-2xl border border-white/60 bg-white/70 p-4 text-left shadow-sm shadow-gray-900/5 backdrop-blur-xl hover:bg-white/90"
+            className="flex items-center gap-3 rounded-2xl border border-agora-border bg-agora-surface/80 p-4 text-left shadow-sm shadow-black/20 backdrop-blur-xl hover:bg-agora-surface/90"
           >
             <Avatar name={partner.displayName} imageUrl={partner.profileImageUrl} />
             <div className="min-w-0 flex-1">
-              <p className="truncate font-medium text-gray-900">{partner.displayName}</p>
-              <p className="truncate text-sm text-gray-500">{lastMessage ? lastMessage.content : "Say hello!"}</p>
+              <p className="truncate font-medium text-agora-text">{partner.displayName}</p>
+              <p className="truncate text-sm text-agora-muted">{lastMessage ? lastMessage.content : "Say hello!"}</p>
             </div>
             {unreadCount > 0 && (
               <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-red-500 px-1 text-xs font-medium text-white">

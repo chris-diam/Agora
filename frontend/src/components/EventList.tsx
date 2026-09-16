@@ -11,9 +11,9 @@ interface EventListProps {
 }
 
 export function EventList({ events, isLoading, isError, pagination, onPageChange }: EventListProps) {
-  if (isLoading) return <p className="text-gray-500">Loading events...</p>;
+  if (isLoading) return <p className="text-agora-muted">Loading events...</p>;
   if (isError) return <p className="text-red-500">Could not load events.</p>;
-  if (events.length === 0) return <p className="text-gray-500">No events found.</p>;
+  if (events.length === 0) return <p className="text-agora-muted">No events found.</p>;
 
   return (
     <div className="flex flex-col gap-4">

@@ -21,6 +21,10 @@ router.patch(
 );
 router.post("/me/avatar", requireAuth, uploadAvatar, usersController.uploadAvatar);
 
+// Fixed-segment "/artists" is likewise registered before "/:id" so it
+// can't be shadowed by the param route.
+router.get("/artists", usersController.listArtists);
+
 router.get("/:id", optionalAuth, usersController.getUser);
 router.post("/:id/follow", requireAuth, usersController.follow);
 router.delete("/:id/follow", requireAuth, usersController.unfollow);

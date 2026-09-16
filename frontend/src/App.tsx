@@ -7,6 +7,9 @@ import { Sidebar } from "./components/Sidebar";
 import { ToastStack } from "./components/ToastStack";
 import { AuthProvider } from "./context/AuthContext";
 import { SocketProvider } from "./context/SocketContext";
+import { ThemeProvider } from "./context/ThemeContext";
+import { ArtistsPage } from "./pages/ArtistsPage";
+import { ArtsCulturePage } from "./pages/ArtsCulturePage";
 import { CommunitiesPage } from "./pages/CommunitiesPage";
 import { CommunityDetailsPage } from "./pages/CommunityDetailsPage";
 import { ConversationPage } from "./pages/ConversationPage";
@@ -19,8 +22,11 @@ import { FeedPage } from "./pages/FeedPage";
 import { FriendsPage } from "./pages/FriendsPage";
 import { LoginPage } from "./pages/LoginPage";
 import { MessagesPage } from "./pages/MessagesPage";
+import { MusicPage } from "./pages/MusicPage";
+import { NewsPage } from "./pages/NewsPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { RegisterPage } from "./pages/RegisterPage";
+import { SavedPostsPage } from "./pages/SavedPostsPage";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 } },
@@ -35,6 +41,7 @@ function BackgroundBlobs() {
     // wrapper would cut that off. Fixed children don't add scroll area, so
     // there's no scrollbar side effect from letting them extend past 100%.
     <div className="pointer-events-none fixed inset-0" aria-hidden="true">
+      <div className="bg-grid" />
       <div className="bg-blob blob-a" />
       <div className="bg-blob blob-b" />
       <div className="bg-blob blob-c" />
@@ -65,49 +72,56 @@ function PlainLayout() {
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <SocketProvider>
-          <Router>
-            <div className="relative min-h-screen">
-              <BackgroundBlobs />
-              <Navbar />
-              <ToastStack />
-              <ChatDock />
-              <Routes>
-                <Route element={<PlainLayout />}>
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/register" element={<RegisterPage />} />
-                </Route>
-
-                <Route element={<ShellLayout />}>
-                  {/* The feed IS the homepage — no separate landing page or
-                      "go to your feed" button. FeedPage already handles both
-                      authenticated and anonymous viewers. */}
-                  <Route path="/" element={<FeedPage />} />
-                  <Route path="/feed" element={<FeedPage />} />
-                  <Route path="/events" element={<EventsPage />} />
-                  <Route path="/events/:id" element={<EventDetailsPage />} />
-                  <Route path="/communities" element={<CommunitiesPage />} />
-                  <Route path="/communities/:id" element={<CommunityDetailsPage />} />
-                  <Route path="/profile/:id" element={<ProfilePage />} />
-
-                  <Route element={<ProtectedRoute />}>
-                    <Route path="/events/new" element={<CreateEventPage />} />
-                    <Route path="/communities/new" element={<CreateCommunityPage />} />
-                    <Route path="/posts/new" element={<CreatePostPage />} />
-                    <Route path="/friends" element={<FriendsPage />} />
-                    <Route path="/messages" element={<MessagesPage />} />
-                    <Route path="/messages/:userId" element={<ConversationPage />} />
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <SocketProvider>
+            <Router>
+              <div className="relative min-h-screen">
+                <BackgroundBlobs />
+                <Navbar />
+                <ToastStack />
+                <ChatDock />
+                <Routes>
+                  <Route element={<PlainLayout />}>
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
                   </Route>
-                </Route>
 
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </div>
-          </Router>
-        </SocketProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+                  <Route element={<ShellLayout />}>
+                    {/* The feed IS the homepage — no separate landing page or
+                        "go to your feed" button. FeedPage already handles both
+                        authenticated and anonymous viewers. */}
+                    <Route path="/" element={<FeedPage />} />
+                    <Route path="/feed" element={<FeedPage />} />
+                    <Route path="/news" element={<NewsPage />} />
+                    <Route path="/music" element={<MusicPage />} />
+                    <Route path="/arts-culture" element={<ArtsCulturePage />} />
+                    <Route path="/artists" element={<ArtistsPage />} />
+                    <Route path="/events" element={<EventsPage />} />
+                    <Route path="/events/:id" element={<EventDetailsPage />} />
+                    <Route path="/communities" element={<CommunitiesPage />} />
+                    <Route path="/communities/:id" element={<CommunityDetailsPage />} />
+                    <Route path="/profile/:id" element={<ProfilePage />} />
+
+                    <Route element={<ProtectedRoute />}>
+                      <Route path="/events/new" element={<CreateEventPage />} />
+                      <Route path="/communities/new" element={<CreateCommunityPage />} />
+                      <Route path="/posts/new" element={<CreatePostPage />} />
+                      <Route path="/friends" element={<FriendsPage />} />
+                      <Route path="/saved" element={<SavedPostsPage />} />
+                      <Route path="/messages" element={<MessagesPage />} />
+                      <Route path="/messages/:userId" element={<ConversationPage />} />
+                    </Route>
+                  </Route>
+
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </div>
+            </Router>
+          </SocketProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }

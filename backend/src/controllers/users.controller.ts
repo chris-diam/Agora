@@ -10,6 +10,12 @@ export const getUser = asyncHandler(async (req: Request, res: Response) => {
   return sendSuccess(res, user);
 });
 
+export const listArtists = asyncHandler(async (req: Request, res: Response) => {
+  const pagination = getPaginationParams(req.query);
+  const { items, pagination: meta } = await usersService.listArtists(pagination);
+  return sendSuccess(res, items, 200, meta);
+});
+
 export const updateMe = asyncHandler(async (req: Request, res: Response) => {
   const user = await usersService.updateProfile(req.user!.id, req.body);
   return sendSuccess(res, user);

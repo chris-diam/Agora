@@ -36,12 +36,19 @@ export interface PaginationMeta {
   hasPrevPage: boolean;
 }
 
+export interface PortfolioLink {
+  label: string;
+  url: string;
+}
+
 export interface PublicUser {
   id: string;
   username: string;
   email: string;
   displayName: string;
   bio: string | null;
+  profession: string | null;
+  portfolioLinks: PortfolioLink[] | null;
   city: string | null;
   country: string | null;
   profileImageUrl: string | null;
@@ -75,6 +82,8 @@ export interface PostAuthor {
   profileImageUrl: string | null;
 }
 
+export type PostMediaType = "IMAGE" | "VIDEO" | "LINK";
+
 export interface Post {
   id: string;
   authorId: string;
@@ -82,6 +91,8 @@ export interface Post {
   category: PostCategory;
   city: string | null;
   country: string | null;
+  mediaUrl: string | null;
+  mediaType: PostMediaType | null;
   createdAt: string;
   updatedAt: string;
   communityId: string | null;
@@ -89,6 +100,7 @@ export interface Post {
   likesCount: number;
   commentsCount: number;
   likedByViewer?: boolean;
+  savedByViewer?: boolean;
 }
 
 export interface Comment {

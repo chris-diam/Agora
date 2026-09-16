@@ -24,6 +24,14 @@ model User {
   googleId     String? @unique
   displayName  String
   bio          String?
+  // Free-form creative role (e.g. "Saxophonist", "Fashion Designer") — an
+  // opt-in way for a user's existing profile to double as a public artist
+  // page without a separate profile/page entity.
+  profession      String?
+  // Array of { label, url } portfolio links (Spotify, website, Instagram,
+  // etc.), rendered on the profile page. Json rather than a join table —
+  // small, unstructured, always read/written as a whole list.
+  portfolioLinks  Json?
   city            String?
   country         String?
   profileImageUrl String?
@@ -32,9 +40,10 @@ model User {
 
   interests UserInterest[]
 
-  posts    Post[]
-  comments Comment[]
-  likes    Like[]
+  posts       Post[]
+  comments    Comment[]
+  likes       Like[]
+  savedPosts  SavedPost[]
 
   followedBy Follow[] @relation("Following") // users who follow me
   following  Follow[] @relation("Follower") // users I follow
@@ -116,6 +125,12 @@ enum PostCategory {
   GENERAL
 }
 
+enum PostMediaType {
+  IMAGE
+  VIDEO
+  LINK
+}
+
 model Post {
   id        String       @id @default(cuid())
   authorId  String
@@ -123,6 +138,11 @@ model Post {
   category  PostCategory @default(GENERAL)
   city      String?
   country   String?
+  // Exactly one attachment per post for the MVP: an uploaded image/video
+  // (mediaUrl points at /uploads/posts/...) or a pasted external link
+  // (mediaUrl is the raw URL, e.g. a YouTube link) rendered as an embed.
+  mediaUrl  String?
+  mediaType PostMediaType?
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 
@@ -130,9 +150,10 @@ model Post {
   communityId String?
   community   Community? @relation(fields: [communityId], references: [id], onDelete: SetNull)
 
-  author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  author   User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
   likes    Like[]
   comments Comment[]
+  savedBy  SavedPost[]
 
   @@index([authorId])
   @@index([category])
@@ -141,6 +162,19 @@ model Post {
 }
 
 model Like {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([userId])
+}
+
+model SavedPost {
   id        String   @id @default(cuid())
   postId    String
   userId    String

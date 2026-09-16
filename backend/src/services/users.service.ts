@@ -17,12 +17,37 @@ export const publicUserSelect = {
   email: true,
   displayName: true,
   bio: true,
+  profession: true,
+  portfolioLinks: true,
   city: true,
   country: true,
   profileImageUrl: true,
   createdAt: true,
   updatedAt: true,
 } satisfies Prisma.UserSelect;
+
+// Users who've opted into the "artist page" fields on their profile —
+// backs the Artists directory. No separate profile/page entity: anyone can
+// set a profession and show up here.
+export const listArtists = async ({ page, limit, skip }: PaginationParams) => {
+  const where: Prisma.UserWhereInput = { profession: { not: null } };
+
+  const [rows, totalItems] = await Promise.all([
+    prisma.user.findMany({
+      where,
+      select: publicUserSelect,
+      orderBy: { displayName: "asc" },
+      skip,
+      take: limit,
+    }),
+    prisma.user.count({ where }),
+  ]);
+
+  return {
+    items: rows,
+    pagination: buildPaginationMeta(page, limit, totalItems),
+  };
+};
 
 export const getUserById = async (id: string, viewerId?: string) => {
   const user = await prisma.user.findUnique({
@@ -82,7 +107,9 @@ export const updateAvatar = async (userId: string, filename: string) => {
 export const updateProfile = async (userId: string, data: UpdateProfileInput) => {
   return prisma.user.update({
     where: { id: userId },
-    data,
+    // An empty string means "cleared" — store null so the Artists
+    // directory's `profession: { not: null }` filter behaves correctly.
+    data: { ...data, profession: data.profession === "" ? null : data.profession },
     select: publicUserSelect,
   });
 };

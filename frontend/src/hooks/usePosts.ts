@@ -40,3 +40,15 @@ export const useLikePost = () => {
     onSuccess: () => invalidatePostLists(queryClient),
   });
 };
+
+export const useSavedPosts = (params: postsApi.ListSavedPostsParams = {}) =>
+  useQuery({ queryKey: ["posts", "saved", params], queryFn: () => postsApi.listSavedPosts(params) });
+
+export const useSavePost = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, saved }: { id: string; saved: boolean }) =>
+      saved ? postsApi.unsavePost(id) : postsApi.savePost(id),
+    onSuccess: () => invalidatePostLists(queryClient),
+  });
+};

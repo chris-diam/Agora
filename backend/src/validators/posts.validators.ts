@@ -10,6 +10,9 @@ export const createPostSchema = z.object({
     category: z.nativeEnum(PostCategory).optional(),
     city: z.string().max(100).optional(),
     country: z.string().max(100).optional(),
+    // Only used when no file is attached — an external link (YouTube, etc.)
+    // to render as the post's media instead of an uploaded file.
+    linkUrl: z.string().url("Must be a valid URL").max(2000).optional(),
   }),
 });
 
@@ -30,7 +33,13 @@ export const listPostsQuerySchema = z.object({
   query: z.object({
     page: z.string().optional(),
     limit: z.string().optional(),
-    category: z.nativeEnum(PostCategory).optional(),
+    // Comma-separated for multi-category sections (e.g. "Arts & culture"
+    // groups ART,CULTURE,THEATRE,CINEMA into one feed).
+    category: z
+      .string()
+      .transform((value) => value.split(",").map((v) => v.trim()))
+      .pipe(z.array(z.nativeEnum(PostCategory)).min(1))
+      .optional(),
     authorId: z.string().optional(),
   }),
 });

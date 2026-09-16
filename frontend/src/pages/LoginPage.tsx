@@ -4,7 +4,7 @@ import { LoginForm } from "../components/LoginForm";
 
 export function LoginPage() {
   return (
-    <div className="mx-auto mt-6 flex min-h-150 max-w-4xl overflow-hidden rounded-2xl border border-white/60 bg-white shadow-sm shadow-gray-900/10 lg:mt-12">
+    <div className="mx-auto mt-6 flex min-h-150 max-w-4xl overflow-hidden rounded-2xl border border-agora-border bg-agora-surface shadow-sm shadow-black/30 lg:mt-12">
       <div className="hidden w-1/2 lg:block">
         <img src="/login-hero.jpg" alt="Agora — people, places, passions" className="h-full w-full object-cover" />
       </div>
@@ -14,16 +14,16 @@ export function LoginPage() {
 
         <LoginForm />
 
-        <div className="my-5 flex items-center gap-3 text-xs text-gray-400">
-          <div className="h-px flex-1 bg-gray-200" />
+        <div className="my-5 flex items-center gap-3 text-xs text-agora-dim">
+          <div className="h-px flex-1 bg-agora-border" />
           OR
-          <div className="h-px flex-1 bg-gray-200" />
+          <div className="h-px flex-1 bg-agora-border" />
         </div>
 
         <GoogleSignInButton />
 
-        <div className="mt-6 border-t border-gray-100 pt-6 text-center">
-          <p className="text-sm text-gray-600">
+        <div className="mt-6 border-t border-agora-border pt-6 text-center">
+          <p className="text-sm text-agora-muted">
             Don't have an account?{" "}
             <Link to="/register" className="font-semibold text-agora hover:underline">
               Sign up

@@ -6,7 +6,7 @@ export function CreatePostPage() {
 
   return (
     <div className="mx-auto max-w-xl">
-      <h1 className="mb-4 text-xl font-semibold text-gray-900">Create post</h1>
+      <h1 className="mb-4 text-xl font-semibold text-agora-text">Create post</h1>
       <CreatePost onCreated={() => navigate("/feed")} />
     </div>
   );

@@ -36,18 +36,18 @@ export function EventsPage() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-gray-900">Events</h1>
+        <h1 className="text-xl font-semibold text-agora-text">Events</h1>
         {isAuthenticated && (
           <Link
             to="/events/new"
-            className="rounded-full bg-agora px-4 py-1.5 text-sm font-medium text-white hover:bg-agora-hover"
+            className="rounded-full bg-agora px-4 py-1.5 text-sm font-medium text-agora-on hover:bg-agora-hover"
           >
             Create event
           </Link>
         )}
       </div>
 
-      <div className="flex flex-wrap gap-2 rounded-2xl border border-white/60 bg-white/70 p-3 shadow-sm shadow-gray-900/5 backdrop-blur-xl">
+      <div className="flex flex-wrap gap-2 rounded-2xl border border-agora-border bg-agora-surface/80 p-3 shadow-sm shadow-black/20 backdrop-blur-xl">
         <input
           value={city}
           onChange={(event) => {
@@ -55,7 +55,7 @@ export function EventsPage() {
             setPage(1);
           }}
           placeholder="City"
-          className="rounded-xl border border-gray-200 bg-white/80 px-3 py-1.5 text-sm focus:ring-2 focus:ring-gray-900/10 focus:outline-none"
+          className="rounded-xl border border-agora-border bg-agora-surface px-3 py-1.5 text-sm focus:ring-2 focus:ring-agora/30 focus:outline-none"
         />
         <input
           value={country}
@@ -64,7 +64,7 @@ export function EventsPage() {
             setPage(1);
           }}
           placeholder="Country"
-          className="rounded-xl border border-gray-200 bg-white/80 px-3 py-1.5 text-sm focus:ring-2 focus:ring-gray-900/10 focus:outline-none"
+          className="rounded-xl border border-agora-border bg-agora-surface px-3 py-1.5 text-sm focus:ring-2 focus:ring-agora/30 focus:outline-none"
         />
         <select
           value={category}
@@ -72,7 +72,7 @@ export function EventsPage() {
             setCategory(event.target.value as EventCategory | "");
             setPage(1);
           }}
-          className="rounded-xl border border-gray-200 bg-white/80 px-3 py-1.5 text-sm focus:ring-2 focus:ring-gray-900/10 focus:outline-none"
+          className="rounded-xl border border-agora-border bg-agora-surface px-3 py-1.5 text-sm focus:ring-2 focus:ring-agora/30 focus:outline-none"
         >
           <option value="">All categories</option>
           {EVENT_CATEGORIES.map((option) => (
@@ -88,7 +88,7 @@ export function EventsPage() {
             setDate(event.target.value);
             setPage(1);
           }}
-          className="rounded-xl border border-gray-200 bg-white/80 px-3 py-1.5 text-sm focus:ring-2 focus:ring-gray-900/10 focus:outline-none"
+          className="rounded-xl border border-agora-border bg-agora-surface px-3 py-1.5 text-sm focus:ring-2 focus:ring-agora/30 focus:outline-none"
         />
       </div>
 

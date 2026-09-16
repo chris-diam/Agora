@@ -9,12 +9,12 @@ export function Pagination({ pagination, onPageChange }: PaginationProps) {
   if (pagination.totalPages <= 1) return null;
 
   return (
-    <div className="flex items-center justify-center gap-3 py-2 text-sm text-gray-600">
+    <div className="flex items-center justify-center gap-3 py-2 text-sm text-agora-muted">
       <button
         type="button"
         onClick={() => onPageChange(pagination.page - 1)}
         disabled={!pagination.hasPrevPage}
-        className="rounded-full border border-gray-300 bg-white/70 px-3 py-1 hover:bg-white disabled:opacity-40 disabled:hover:bg-white/70"
+        className="rounded-full border border-agora-border bg-agora-surface/80 px-3 py-1 hover:bg-agora-surface disabled:opacity-40 disabled:hover:bg-agora-surface/80"
       >
         Previous
       </button>
@@ -25,7 +25,7 @@ export function Pagination({ pagination, onPageChange }: PaginationProps) {
         type="button"
         onClick={() => onPageChange(pagination.page + 1)}
         disabled={!pagination.hasNextPage}
-        className="rounded-full border border-gray-300 bg-white/70 px-3 py-1 hover:bg-white disabled:opacity-40 disabled:hover:bg-white/70"
+        className="rounded-full border border-agora-border bg-agora-surface/80 px-3 py-1 hover:bg-agora-surface disabled:opacity-40 disabled:hover:bg-agora-surface/80"
       >
         Next
       </button>

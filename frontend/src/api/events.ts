@@ -6,7 +6,7 @@ export interface ListEventsParams {
   limit?: number;
   city?: string;
   country?: string;
-  category?: EventCategory;
+  category?: EventCategory | EventCategory[];
   date?: string;
 }
 

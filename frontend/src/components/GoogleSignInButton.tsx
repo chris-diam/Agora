@@ -56,7 +56,7 @@ export function GoogleSignInButton() {
 
   if (!GOOGLE_CLIENT_ID) {
     return (
-      <p className="rounded-xl border border-dashed border-gray-300 bg-white/50 p-3 text-center text-xs text-gray-400">
+      <p className="rounded-xl border border-dashed border-agora-border bg-agora-surface/60 p-3 text-center text-xs text-agora-dim">
         Google sign-in isn't configured yet.
       </p>
     );

@@ -43,7 +43,12 @@ export const listEventsQuerySchema = z.object({
     limit: z.string().optional(),
     city: z.string().optional(),
     country: z.string().optional(),
-    category: z.nativeEnum(EventCategory).optional(),
+    // Comma-separated for multi-category sections (e.g. "Arts & culture").
+    category: z
+      .string()
+      .transform((value) => value.split(",").map((v) => v.trim()))
+      .pipe(z.array(z.nativeEnum(EventCategory)).min(1))
+      .optional(),
     date: z
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/, "date must be in YYYY-MM-DD format")

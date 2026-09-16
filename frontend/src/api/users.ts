@@ -1,15 +1,25 @@
 import { apiFetch, buildQuery } from "./client";
-import type { PublicUser, UserProfile } from "../types";
+import type { PortfolioLink, PublicUser, UserProfile } from "../types";
+
+export interface ListArtistsParams {
+  page?: number;
+  limit?: number;
+}
 
 export interface UpdateProfileInput {
   displayName?: string;
   bio?: string;
+  profession?: string;
+  portfolioLinks?: PortfolioLink[];
   city?: string;
   country?: string;
   profileImageUrl?: string;
 }
 
 export const getUser = (id: string) => apiFetch<UserProfile>(`/users/${id}`);
+
+export const listArtists = (params: ListArtistsParams = {}) =>
+  apiFetch<PublicUser[]>(`/users/artists${buildQuery(params)}`);
 
 export const updateMe = (input: UpdateProfileInput) =>
   apiFetch<PublicUser>("/users/me", { method: "PATCH", body: JSON.stringify(input) });

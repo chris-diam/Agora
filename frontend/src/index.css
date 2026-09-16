@@ -1,33 +1,154 @@
 @import "tailwindcss";
 
-/* Agora brand tokens — see /docs/brand/brand-guidelines.md. Exact hex from
-   the brand kit for the primary green and dark teal; -hover and -light are
-   derived shades for interactive/tint states the kit doesn't specify. */
+/* Agora themes — each is a user-facing bg/element/text triad (see
+   ThemeContext.tsx for the picker), plus tokens derived from those three
+   algorithmically (scripts/derive-theme colors, not hand-picked) so every
+   theme keeps readable contrast: surfaces/borders are the bg blended
+   toward the text color (naturally lightens dark themes, darkens light
+   ones); muted/dim text are bg-toward-text blends tuned to hit ~4.5:1 and
+   ~3:1 contrast against bg; agora-on is the label color for content sitting
+   on a solid --color-agora fill, chosen (white or near-black) by the
+   accent's own lightness so pale accents still get readable labels.
+   Default (@theme) is "Midnight"; the rest override the same custom
+   properties under [data-theme="..."], which Tailwind's generated
+   utilities (bg-agora, text-agora-text, etc.) read at runtime. */
 @theme {
+  --color-agora: #53a1c9;
+  --color-agora-on: #ffffff;
+  --color-agora-hover: #72b2d3;
+  --color-agora-light: #1a2930;
+  --color-agora-dark: #01161e;
+  --color-agora-text: #dd5d42;
+  --color-agora-muted: #d95c41;
+  --color-agora-dim: #a74f3d;
+  --color-agora-bg: #02222e;
+  --color-agora-surface: #0d252f;
+  --color-agora-border: #2e2e32;
+}
+
+[data-theme="classic"] {
   --color-agora: #10b891;
-  --color-agora-hover: #0ea47e;
-  --color-agora-light: #e3f7f1;
-  --color-agora-dark: #0b2e2b;
+  --color-agora-on: #ffffff;
+  --color-agora-hover: #3bc5a5;
+  --color-agora-light: #dee2e4;
+  --color-agora-dark: #707071;
   --color-agora-text: #0b1f1e;
-  --color-agora-muted: #6b7c7a;
+  --color-agora-muted: #697676;
+  --color-agora-dim: #899394;
+  --color-agora-bg: #f8fafc;
+  --color-agora-surface: #eceff1;
+  --color-agora-border: #c9ced0;
+}
+
+[data-theme="midnight"] {
+  --color-agora: #53a1c9;
+  --color-agora-on: #ffffff;
+  --color-agora-hover: #72b2d3;
+  --color-agora-light: #1a2930;
+  --color-agora-dark: #01161e;
+  --color-agora-text: #dd5d42;
+  --color-agora-muted: #d95c41;
+  --color-agora-dim: #a74f3d;
+  --color-agora-bg: #02222e;
+  --color-agora-surface: #0d252f;
+  --color-agora-border: #2e2e32;
+}
+
+[data-theme="orchard"] {
+  --color-agora: #004722;
+  --color-agora-on: #ffffff;
+  --color-agora-hover: #2e684a;
+  --color-agora-light: #ecd7d2;
+  --color-agora-dark: #6c6c66;
+  --color-agora-text: #d21955;
+  --color-agora-muted: #d31d57;
+  --color-agora-dim: #dc6084;
+  --color-agora-bg: #efefe2;
+  --color-agora-surface: #eee4db;
+  --color-agora-border: #e9c4c6;
+}
+
+[data-theme="terracotta"] {
+  --color-agora: #482f24;
+  --color-agora-on: #ffffff;
+  --color-agora-hover: #69544b;
+  --color-agora-light: #7b9179;
+  --color-agora-dark: #516958;
+  --color-agora-text: #690804;
+  --color-agora-muted: #690b06;
+  --color-agora-dim: #704033;
+  --color-agora-bg: #7da288;
+  --color-agora-surface: #7c9a81;
+  --color-agora-border: #79836e;
+}
+
+[data-theme="pop"] {
+  --color-agora: #f9bfc7;
+  --color-agora-on: #111111;
+  --color-agora-hover: #d4a2a9;
+  --color-agora-light: #7d8178;
+  --color-agora-dark: #595b58;
+  --color-agora-text: #1e2901;
+  --color-agora-muted: #202b04;
+  --color-agora-dim: #3c4426;
+  --color-agora-bg: #898c87;
+  --color-agora-surface: #848780;
+  --color-agora-border: #74786c;
+}
+
+[data-theme="vintage"] {
+  --color-agora: #94791e;
+  --color-agora-on: #ffffff;
+  --color-agora-hover: #a79146;
+  --color-agora-light: #5b3139;
+  --color-agora-dark: #2f1219;
+  --color-agora-text: #ede3cf;
+  --color-agora-muted: #a58b85;
+  --color-agora-dim: #8b6b6a;
+  --color-agora-bg: #491b27;
+  --color-agora-surface: #51252f;
+  --color-agora-border: #6a4349;
 }
 
 @layer base {
   body {
-    @apply bg-gray-50 text-gray-900;
+    @apply bg-agora-bg text-agora-text;
+    /* Soft diagonal wash behind the grid/blobs so the canvas reads as a
+       gradient rather than a flat fill, even before the blobs drift into
+       view. Theme-aware via CSS vars. */
+    background-image: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--color-agora) 10%, transparent) 0%,
+      transparent 45%,
+      color-mix(in srgb, var(--color-agora-text) 10%, transparent) 100%
+    );
+    background-attachment: fixed;
   }
+}
+
+/* Faint grid texture behind the app — reads as structure under the
+   gradient/blobs without competing with content. */
+.bg-grid {
+  position: fixed;
+  inset: 0;
+  z-index: -20;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-agora-text) 14%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-agora-text) 14%, transparent) 1px, transparent 1px);
+  background-size: 44px 44px;
 }
 
 /* Calm, slow-moving colored blobs behind the app — inspired by ink/light
    moving in glass. Pure CSS, no images/libraries. Kept subtle (heavy blur,
    low opacity, slow duration) so content stays easy to read, and disabled
-   entirely for anyone who prefers reduced motion. */
+   entirely for anyone who prefers reduced motion. Colors follow the active
+   theme via CSS variables rather than fixed hex. */
 .bg-blob {
   position: fixed;
   z-index: -10;
   border-radius: 9999px;
-  filter: blur(70px);
-  opacity: 0.55;
+  filter: blur(90px);
+  opacity: 0.35;
   pointer-events: none;
 }
 
@@ -36,7 +157,7 @@
   left: -8%;
   width: 32rem;
   height: 32rem;
-  background: radial-gradient(circle, #10b891, transparent 70%);
+  background: radial-gradient(circle, var(--color-agora), transparent 70%);
   animation: drift-a 26s ease-in-out infinite;
 }
 
@@ -45,7 +166,7 @@
   right: -12%;
   width: 28rem;
   height: 28rem;
-  background: radial-gradient(circle, #93c5fd, transparent 70%);
+  background: radial-gradient(circle, var(--color-agora-text), transparent 70%);
   animation: drift-b 30s ease-in-out infinite;
 }
 
@@ -54,7 +175,7 @@
   left: 28%;
   width: 34rem;
   height: 34rem;
-  background: radial-gradient(circle, #f9a8d4, transparent 70%);
+  background: radial-gradient(circle, var(--color-agora-hover), transparent 70%);
   animation: drift-a 34s ease-in-out infinite reverse;
 }
 

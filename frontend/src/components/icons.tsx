@@ -132,3 +132,72 @@ export function CloseIcon(props: IconProps) {
     </svg>
   );
 }
+
+export function PaletteIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 3.5c-4.7 0-8.5 3.6-8.5 8s3.8 8 8.5 8c.9 0 1.6-.7 1.6-1.6 0-.4-.2-.8-.4-1.1-.2-.3-.4-.6-.4-1 0-.8.7-1.5 1.5-1.5h1.8c2.5 0 4.5-2 4.5-4.4 0-3.5-4-6.4-8.6-6.4Z" />
+      <circle cx="7.5" cy="10.5" r="1" fill="currentColor" stroke="none" />
+      <circle cx="11" cy="7.5" r="1" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="8" r="1" fill="currentColor" stroke="none" />
+      <circle cx="17" cy="11.5" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+export function NewsIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="3.5" y="4.5" width="17" height="15" rx="2" />
+      <path d="M7 8.5h6M7 12h10M7 15.5h10" />
+    </svg>
+  );
+}
+
+export function PinIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z" />
+      <circle cx="12" cy="9.5" r="2.5" />
+    </svg>
+  );
+}
+
+export function MusicNoteIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M9 17.5V5.5l10-2v12" />
+      <circle cx="6.5" cy="17.5" r="2.5" />
+      <circle cx="16.5" cy="15.5" r="2.5" />
+    </svg>
+  );
+}
+
+export function MicIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="9" y="3.5" width="6" height="11" rx="3" />
+      <path d="M6 11.5a6 6 0 0 0 12 0" />
+      <path d="M12 17.5v3.5M9 21h6" />
+    </svg>
+  );
+}
+
+export function BookmarkIcon(props: IconProps & { filled?: boolean }) {
+  const { filled, ...rest } = props;
+  return (
+    <svg {...base} {...rest} fill={filled ? "currentColor" : "none"}>
+      <path d="M6.5 4.5h11a1 1 0 0 1 1 1V20l-6.5-4-6.5 4V5.5a1 1 0 0 1 1-1Z" />
+    </svg>
+  );
+}
+
+export function LinkIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M9.5 14.5 14.5 9.5" />
+      <path d="M11 6.5 12.6 4.9a3.5 3.5 0 0 1 5 5L16 11.5" />
+      <path d="M13 17.5 11.4 19.1a3.5 3.5 0 0 1-5-5L8 12.5" />
+    </svg>
+  );
+}

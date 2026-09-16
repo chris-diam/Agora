@@ -42,7 +42,7 @@ export function ChatDock() {
           <button
             type="button"
             onClick={() => setShowPicker((value) => !value)}
-            className="flex h-12 w-12 items-center justify-center rounded-full bg-agora-dark text-white shadow-lg shadow-gray-900/20 hover:bg-gray-800"
+            className="flex h-12 w-12 items-center justify-center rounded-full bg-agora text-agora-on shadow-lg shadow-black/30 hover:bg-agora-hover"
             aria-label="New chat"
           >
             <PencilIcon className="h-5 w-5" />
@@ -51,13 +51,13 @@ export function ChatDock() {
           {showPicker && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setShowPicker(false)} />
-              <div className="absolute right-0 bottom-full z-50 mb-2 w-64 overflow-hidden rounded-2xl border border-white/60 bg-white/95 shadow-lg shadow-gray-900/10 backdrop-blur-xl">
-                <p className="border-b border-gray-100 px-4 py-2 text-xs font-semibold tracking-wide text-gray-400 uppercase">
+              <div className="absolute right-0 bottom-full z-50 mb-2 w-64 overflow-hidden rounded-2xl border border-agora-border bg-agora-surface/95 shadow-lg shadow-black/30 backdrop-blur-xl">
+                <p className="border-b border-agora-border px-4 py-2 text-xs font-semibold tracking-wide text-agora-dim uppercase">
                   Start a chat
                 </p>
                 <div className="max-h-72 overflow-y-auto">
                   {friends.length === 0 && (
-                    <p className="px-4 py-3 text-sm text-gray-400">
+                    <p className="px-4 py-3 text-sm text-agora-dim">
                       No friends yet — a friend is anyone you follow who follows you back.
                     </p>
                   )}
@@ -69,7 +69,7 @@ export function ChatDock() {
                         openChat(friend.id);
                         setShowPicker(false);
                       }}
-                      className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm hover:bg-gray-900/5"
+                      className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm hover:bg-white/5"
                     >
                       <Avatar name={friend.displayName} imageUrl={friend.profileImageUrl} size="sm" />
                       {friend.displayName}

@@ -10,7 +10,10 @@ export const listEvents = asyncHandler(async (req: Request, res: Response) => {
   const filters = {
     city: typeof req.query.city === "string" ? req.query.city : undefined,
     country: typeof req.query.country === "string" ? req.query.country : undefined,
-    category: typeof req.query.category === "string" ? (req.query.category as EventCategory) : undefined,
+    category:
+      typeof req.query.category === "string"
+        ? (req.query.category.split(",").map((c) => c.trim()) as EventCategory[])
+        : undefined,
     date: typeof req.query.date === "string" ? req.query.date : undefined,
   };
 

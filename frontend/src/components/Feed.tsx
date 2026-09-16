@@ -27,9 +27,9 @@ export function Feed({
   onPageChange,
   showReasons = true,
 }: FeedProps) {
-  if (isLoading) return <p className="text-gray-500">Loading...</p>;
+  if (isLoading) return <p className="text-agora-muted">Loading...</p>;
   if (isError) return <p className="text-red-500">{errorMessage ?? "Something went wrong."}</p>;
-  if (items.length === 0) return <p className="text-gray-500">Nothing to show yet.</p>;
+  if (items.length === 0) return <p className="text-agora-muted">Nothing to show yet.</p>;
 
   return (
     <div className="flex flex-col gap-4">
