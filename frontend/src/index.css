@@ -113,6 +113,7 @@
 @layer base {
   body {
     @apply bg-agora-bg text-agora-text;
+    font-family: "Wellfleet", serif;
     /* Soft diagonal wash behind the grid/blobs so the canvas reads as a
        gradient rather than a flat fill, even before the blobs drift into
        view. Theme-aware via CSS vars. */
