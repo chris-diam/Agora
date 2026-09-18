@@ -127,19 +127,18 @@
 }
 
 /* Faint grid texture behind the app — reads as structure under the
-   gradient/blobs without competing with content. Uses --color-agora-border
-   rather than a fresh blend of the text color: border is already tuned per
-   theme to sit at a fixed, guaranteed-visible distance from the background
-   (it's what every card outline uses), whereas blending straight from the
-   text color let contrast swing wildly theme to theme — invisible in some,
-   fine in others, since text-vs-bg contrast itself varies a lot by design. */
+   gradient/blobs without competing with content. The line color is the
+   theme's accent (--color-agora) itself at a low alpha, blended in OKLCH
+   rather than sRGB — mixing in OKLCH stays perceptually even (no muddy
+   in-between hues) and tinting straight from the accent keeps the grid
+   visually tied to the brand color instead of a separately-computed gray. */
 .bg-grid {
   position: fixed;
   inset: 0;
   z-index: -20;
   background-image:
-    linear-gradient(color-mix(in srgb, var(--color-agora-border) 65%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in srgb, var(--color-agora-border) 65%, transparent) 1px, transparent 1px);
+    linear-gradient(color-mix(in oklch, var(--color-agora) 35%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklch, var(--color-agora) 35%, transparent) 1px, transparent 1px);
   background-size: 44px 44px;
 }
 
