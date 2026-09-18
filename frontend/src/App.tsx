@@ -54,7 +54,13 @@ function BackgroundBlobs() {
 // App pages (feed, events, communities, profile) get the sidebar shell.
 function ShellLayout() {
   return (
-    <div className="mx-auto flex max-w-7xl gap-6 px-4 py-6">
+    // relative + z-0: BackgroundBlobs is `position: fixed`, which forces it
+    // into its own stacking context regardless of z-index — CSS paint order
+    // then puts stacking-context children above plain in-flow content
+    // regardless of DOM order, so without an explicit stacking context of
+    // its own, page content with no backdrop-blur (which also happens to
+    // create a stacking context) would paint *behind* the "background".
+    <div className="relative z-0 mx-auto flex max-w-7xl gap-6 px-4 py-6">
       <Sidebar />
       {/* Extra bottom padding on mobile only — the fixed ChatDock bubble
           would otherwise permanently sit over the last bit of content,
@@ -68,8 +74,9 @@ function ShellLayout() {
 
 // Marketing/auth pages stay a plain centered column, no sidebar.
 function PlainLayout() {
+  // See ShellLayout's comment — same stacking-context fix.
   return (
-    <main className="mx-auto max-w-5xl px-4 py-6">
+    <main className="relative z-0 mx-auto max-w-5xl px-4 py-6">
       <Outlet />
     </main>
   );
