@@ -60,7 +60,7 @@ export function FeedPage() {
           <p className="mt-1 text-agora-muted">
             {isAuthenticated
               ? "Choose the current. Every story keeps its reason visible."
-              : "Upcoming events on Agora — log in to see the feed and post your own."}
+              : "Upcoming events on KYMA — log in to see the feed and post your own."}
           </p>
 
           {isAuthenticated && (

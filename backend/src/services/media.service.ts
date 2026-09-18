@@ -11,6 +11,24 @@ export const createMediaAsset = async (buffer: Buffer, mimeType: string) => {
   return `${MEDIA_PATH_PREFIX}${asset.id}`;
 };
 
+// Downloads an external image (e.g. a Google account's profile photo) once
+// and re-hosts it as our own MediaAsset, instead of storing the external
+// URL directly. Hotlinking it forever is fragile: Google's photo CDN is
+// rate-limited (seen firsthand as a 429 on repeated loads) and the URL can
+// also expire/rotate independently of anything we do. Returns null on any
+// failure — the caller falls back to no avatar rather than blocking signup.
+export const createMediaAssetFromUrl = async (url: string): Promise<string | null> => {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    const buffer = Buffer.from(await response.arrayBuffer());
+    const mimeType = response.headers.get("content-type") ?? "image/jpeg";
+    return await createMediaAsset(buffer, mimeType);
+  } catch {
+    return null;
+  }
+};
+
 export const getMediaAsset = async (id: string) => {
   const asset = await prisma.mediaAsset.findUnique({ where: { id } });
   if (!asset) throw new AppError("Media not found", 404);

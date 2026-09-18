@@ -1,8 +1,8 @@
 {
-  "name": "agora-backend",
+  "name": "kyma-backend",
   "version": "0.1.0",
   "private": true,
-  "description": "Backend API for Agora, a transparency-first social platform (modular monolith)",
+  "description": "Backend API for KYMA, a transparency-first social platform (modular monolith)",
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",

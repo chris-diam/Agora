@@ -6,11 +6,11 @@ export function LoginPage() {
   return (
     <div className="mx-auto mt-6 flex min-h-150 max-w-4xl overflow-hidden rounded-2xl border border-agora-border bg-agora-surface shadow-sm shadow-black/30 lg:mt-12">
       <div className="hidden w-1/2 lg:block">
-        <img src="/login-hero.jpg" alt="Agora — people, places, passions" className="h-full w-full object-cover" />
+        <img src="/login-hero.jpg" alt="KYMA — people, places, passions" className="h-full w-full object-cover" />
       </div>
 
       <div className="flex w-full flex-col justify-center px-8 py-10 sm:px-16 lg:w-1/2">
-        <h1 className="mb-6 text-center text-2xl font-semibold text-agora-text">Log into Agora</h1>
+        <h1 className="mb-6 text-center text-2xl font-semibold text-agora-text">Log into KYMA</h1>
 
         <LoginForm />
 

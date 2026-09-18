@@ -96,11 +96,11 @@ The backend's `Dockerfile` was built and run locally against the project's Postg
 
 ```bash
 cd backend
-docker build -t agora-backend .
+docker build -t kyma-backend .
 docker run --network social-network_default \
   -e DATABASE_URL="postgresql://social_platform:social_platform@social_platform_postgres:5432/social_platform?schema=public" \
   -e JWT_SECRET="test-secret" \
   -p 4001:4000 \
-  agora-backend
+  kyma-backend
 curl http://localhost:4001/api/health
 ```

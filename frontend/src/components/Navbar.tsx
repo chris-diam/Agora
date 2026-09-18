@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Avatar } from "./Avatar";
-import { MenuIcon, PlusIcon } from "./icons";
+import { LogoMarkIcon, MenuIcon, PlusIcon } from "./icons";
 import { NotificationsBell } from "./NotificationsBell";
 import { SearchBar } from "./SearchBar";
 import { ThemeSwitcher } from "./ThemeSwitcher";
@@ -31,9 +31,12 @@ export function Navbar({ onMenuClick }: NavbarProps) {
           <MenuIcon className="h-5 w-5" />
         </button>
 
-        <Link to="/" className="flex shrink-0 items-center">
-          <img src="/logo-mark.svg" alt="Agora" className="h-8 w-8 sm:hidden" />
-          <img src="/logo-full.svg" alt="Agora" className="hidden h-9 w-auto sm:block sm:h-10" />
+        <Link to="/" className="flex shrink-0 items-center gap-2">
+          <LogoMarkIcon className="h-8 w-8 text-agora" />
+          <span className="hidden sm:block">
+            <span className="block text-lg leading-none font-bold tracking-tight text-agora-text">KYMA</span>
+            <span className="block text-[9px] leading-none tracking-[0.25em] text-agora-dim">PEOPLE PLACES PASSIONS</span>
+          </span>
         </Link>
 
         <div className="order-3 w-full min-w-0 sm:order-0 sm:w-auto sm:flex-1">

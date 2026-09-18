@@ -14,7 +14,7 @@ export function ArtistsPage() {
       <section className="rounded-3xl border border-agora-border bg-agora-surface/80 p-6 shadow-sm shadow-black/20 backdrop-blur-xl">
         <h1 className="text-3xl font-semibold text-agora-text">Artists</h1>
         <p className="mt-1 text-agora-muted">
-          People on Agora who've added a profession to their profile — musicians, designers, and other creators.
+          People on KYMA who've added a profession to their profile — musicians, designers, and other creators.
         </p>
       </section>
 

@@ -6,6 +6,7 @@ import { signToken } from "../utils/jwt";
 import { comparePassword, hashPassword } from "../utils/password";
 import { toPublicUser } from "../utils/serializers";
 import { LoginInput, RegisterInput } from "../validators/auth.validators";
+import { createMediaAssetFromUrl } from "./media.service";
 
 export const registerUser = async (input: RegisterInput) => {
   const existing = await prisma.user.findFirst({
@@ -133,7 +134,11 @@ export const loginWithGoogle = async (idToken: string) => {
             email: payload.email,
             googleId: payload.sub,
             displayName: payload.name ?? payload.email.split("@")[0],
-            profileImageUrl: payload.picture ?? null,
+            // Re-hosted as our own MediaAsset rather than the raw Google URL
+            // — see createMediaAssetFromUrl for why (rate limiting, URL
+            // rotation). null if there's no picture or the fetch fails;
+            // the UI already falls back to an initial-letter avatar.
+            profileImageUrl: payload.picture ? await createMediaAssetFromUrl(payload.picture) : null,
           },
         });
   }
