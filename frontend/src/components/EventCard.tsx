@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { resolveMediaUrl } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { useRemoveAttendance, useSetAttendance } from "../hooks/useEvents";
 import { Avatar } from "./Avatar";
@@ -10,9 +11,16 @@ export function EventCard({ event }: { event: EventItem }) {
   const removeAttendance = useRemoveAttendance();
 
   const start = new Date(event.startDate);
+  const imageUrl = resolveMediaUrl(event.imageUrl);
 
   return (
-    <article className="rounded-2xl border border-agora-border bg-agora-surface/80 p-4 shadow-sm shadow-black/20 backdrop-blur-xl transition-transform duration-200 ease-out hover:scale-[1.015] hover:shadow-lg hover:shadow-black/30 motion-reduce:transition-none motion-reduce:hover:scale-100">
+    <article className="overflow-hidden rounded-2xl border border-agora-border bg-agora-surface/80 shadow-sm shadow-black/20 backdrop-blur-xl transition-transform duration-200 ease-out hover:scale-[1.015] hover:shadow-lg hover:shadow-black/30 motion-reduce:transition-none motion-reduce:hover:scale-100">
+      {imageUrl && (
+        <Link to={`/events/${event.id}`}>
+          <img src={imageUrl} alt="" className="h-40 w-full object-cover" />
+        </Link>
+      )}
+      <div className="p-4">
       <div className="mb-1 flex items-center justify-between gap-2">
         <Link to={`/events/${event.id}`} className="font-medium text-agora-text hover:underline">
           {event.title}
@@ -67,6 +75,7 @@ export function EventCard({ event }: { event: EventItem }) {
             )}
           </>
         )}
+      </div>
       </div>
     </article>
   );

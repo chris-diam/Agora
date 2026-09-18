@@ -20,6 +20,18 @@ export const uploadAvatar = multer({
   },
 }).single("avatar");
 
+export const uploadEventImage = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: MAX_FILE_SIZE_BYTES },
+  fileFilter: (_req, file, callback) => {
+    if (!ALLOWED_MIME_TYPES.has(file.mimetype)) {
+      callback(new AppError("Event photo must be a JPEG, PNG, WebP, or GIF image", 400));
+      return;
+    }
+    callback(null, true);
+  },
+}).single("image");
+
 // Post attachments: images or short videos.
 const ALLOWED_POST_MEDIA_MIME_TYPES = new Set([
   "image/jpeg",

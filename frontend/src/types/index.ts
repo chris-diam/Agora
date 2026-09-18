@@ -123,6 +123,7 @@ export interface EventItem {
   address: string | null;
   latitude: number | null;
   longitude: number | null;
+  imageUrl: string | null;
   startDate: string;
   endDate: string | null;
   organizerId: string;

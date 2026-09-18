@@ -113,7 +113,7 @@ export const getEventById = async (id: string, viewerId?: string) => {
   return formatEvent(event, attendanceMap);
 };
 
-export const createEvent = async (organizerId: string, input: CreateEventInput) => {
+export const createEvent = async (organizerId: string, input: CreateEventInput, imageUrl?: string) => {
   const startDate = new Date(input.startDate);
   const endDate = input.endDate ? new Date(input.endDate) : undefined;
   validateDateRange(startDate, endDate);
@@ -130,6 +130,7 @@ export const createEvent = async (organizerId: string, input: CreateEventInput) 
       address: input.address,
       latitude: input.latitude,
       longitude: input.longitude,
+      imageUrl,
       startDate,
       endDate,
     },

@@ -2,6 +2,7 @@ import { Router } from "express";
 import * as eventsController from "../controllers/events.controller";
 import { requireAuth } from "../middleware/auth.middleware";
 import { optionalAuth } from "../middleware/optionalAuth.middleware";
+import { uploadEventImage } from "../middleware/upload.middleware";
 import { validate } from "../middleware/validate.middleware";
 import {
   createEventSchema,
@@ -13,7 +14,10 @@ import {
 const router = Router();
 
 router.get("/", validate(listEventsQuerySchema), optionalAuth, eventsController.listEvents);
-router.post("/", requireAuth, validate(createEventSchema), eventsController.createEvent);
+// uploadEventImage runs first so an optional multipart "image" file is
+// parsed into req.file before validation reads req.body — same reasoning
+// as posts.routes' uploadPostMedia.
+router.post("/", requireAuth, uploadEventImage, validate(createEventSchema), eventsController.createEvent);
 router.get("/:id", optionalAuth, eventsController.getEvent);
 router.patch("/:id", requireAuth, validate(updateEventSchema), eventsController.updateEvent);
 router.delete("/:id", requireAuth, eventsController.deleteEvent);

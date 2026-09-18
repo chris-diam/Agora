@@ -248,6 +248,7 @@ model Event {
   address     String?
   latitude    Float?
   longitude   Float?
+  imageUrl    String?
   startDate   DateTime
   endDate     DateTime?
   organizerId String

@@ -1,4 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
+import { resolveMediaUrl } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { useDeleteEvent, useEvent, useRemoveAttendance, useSetAttendance } from "../hooks/useEvents";
 
@@ -16,6 +17,7 @@ export function EventDetailsPage() {
 
   const event = data.data;
   const isOwner = user?.id === event.organizerId;
+  const imageUrl = resolveMediaUrl(event.imageUrl);
 
   const handleDelete = async () => {
     if (!confirm("Delete this event?")) return;
@@ -25,7 +27,9 @@ export function EventDetailsPage() {
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-4">
-      <div className="rounded-3xl border border-agora-border bg-agora-surface/80 p-6 shadow-sm shadow-black/20 backdrop-blur-xl">
+      <div className="overflow-hidden rounded-3xl border border-agora-border bg-agora-surface/80 shadow-sm shadow-black/20 backdrop-blur-xl">
+        {imageUrl && <img src={imageUrl} alt="" className="h-64 w-full object-cover" />}
+        <div className="p-6">
         <div className="mb-2 flex items-start justify-between gap-2">
           <h1 className="text-2xl font-semibold text-agora-text">{event.title}</h1>
           <span className="shrink-0 rounded-full bg-agora-light px-2.5 py-0.5 text-xs text-agora-muted">
@@ -85,6 +89,7 @@ export function EventDetailsPage() {
               Delete event
             </button>
           )}
+        </div>
         </div>
       </div>
     </div>

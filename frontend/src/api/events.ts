@@ -22,16 +22,25 @@ export interface CreateEventInput {
   longitude?: number;
   startDate: string;
   endDate?: string;
+  imageFile?: File;
 }
 
-export type UpdateEventInput = Partial<CreateEventInput>;
+export type UpdateEventInput = Partial<Omit<CreateEventInput, "imageFile">>;
 
 export const listEvents = (params: ListEventsParams = {}) => apiFetch<EventItem[]>(`/events${buildQuery(params)}`);
 
 export const getEvent = (id: string) => apiFetch<EventItem>(`/events/${id}`);
 
-export const createEvent = (input: CreateEventInput) =>
-  apiFetch<EventItem>("/events", { method: "POST", body: JSON.stringify(input) });
+export const createEvent = (input: CreateEventInput) => {
+  const { imageFile, ...fields } = input;
+  const formData = new FormData();
+  Object.entries(fields).forEach(([key, value]) => {
+    if (value !== undefined) formData.append(key, String(value));
+  });
+  if (imageFile) formData.append("image", imageFile);
+
+  return apiFetch<EventItem>("/events", { method: "POST", body: formData });
+};
 
 export const updateEvent = (id: string, input: UpdateEventInput) =>
   apiFetch<EventItem>(`/events/${id}`, { method: "PATCH", body: JSON.stringify(input) });

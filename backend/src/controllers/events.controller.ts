@@ -1,5 +1,6 @@
 import { AttendanceStatus, EventCategory } from "@prisma/client";
 import { Request, Response } from "express";
+import { createMediaAsset } from "../services/media.service";
 import * as eventsService from "../services/events.service";
 import { sendSuccess } from "../utils/apiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
@@ -27,7 +28,8 @@ export const getEvent = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const createEvent = asyncHandler(async (req: Request, res: Response) => {
-  const event = await eventsService.createEvent(req.user!.id, req.body);
+  const imageUrl = req.file ? await createMediaAsset(req.file.buffer, req.file.mimetype) : undefined;
+  const event = await eventsService.createEvent(req.user!.id, req.body, imageUrl);
   return sendSuccess(res, event, 201);
 });
 
