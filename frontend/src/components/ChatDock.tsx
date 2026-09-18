@@ -25,8 +25,11 @@ export function ChatDock() {
   const expanded = openChats.filter((chat) => !chat.minimized);
 
   return (
-    <div className="fixed right-4 bottom-4 z-40 flex items-end gap-3">
-      <div className="flex items-end gap-3">
+    <div className="fixed right-4 bottom-4 z-40 flex max-w-[calc(100vw-2rem)] items-end gap-3">
+      {/* Multiple simultaneously-open chats can be wider than a phone
+          screen — this row scrolls horizontally instead of pushing earlier
+          chats off past the viewport edge. */}
+      <div className="flex items-end gap-3 overflow-x-auto">
         {expanded.map((chat) => (
           <ChatPopup
             key={chat.userId}

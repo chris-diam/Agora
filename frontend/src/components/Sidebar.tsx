@@ -27,7 +27,10 @@ const NAV_ITEMS = [
   { to: "/friends", label: "Friends", Icon: UserHeartIcon },
 ];
 
-export function Sidebar() {
+// The actual nav — shared by the persistent desktop Sidebar and the
+// mobile slide-in drawer (MobileNavDrawer) so the links/hooks/counts exist
+// in exactly one place. `onNavigate` lets the drawer close itself on click.
+export function SidebarNavContent({ onNavigate }: { onNavigate?: () => void }) {
   const { user } = useAuth();
   const location = useLocation();
   // Real counts, not decorative stats: upcoming events in the viewer's own
@@ -50,18 +53,18 @@ export function Sidebar() {
     }`;
 
   return (
-    <aside className="hidden w-60 shrink-0 flex-col gap-4 lg:flex">
+    <>
       <nav className="flex flex-col gap-1 rounded-2xl border border-agora-border bg-agora-surface/80 p-3 shadow-sm shadow-black/20 backdrop-blur-xl">
-        <NavLink to="/feed" className={linkClasses({ isActive: isFeedActive })}>
+        <NavLink to="/feed" className={linkClasses({ isActive: isFeedActive })} onClick={onNavigate}>
           <HomeIcon className="h-5 w-5 shrink-0" />
           Feed
         </NavLink>
-        <Link to="/feed?type=local" className={linkClasses({ isActive: isLocalActive })}>
+        <Link to="/feed?type=local" className={linkClasses({ isActive: isLocalActive })} onClick={onNavigate}>
           <PinIcon className="h-5 w-5 shrink-0" />
           Local
         </Link>
         {NAV_ITEMS.map(({ to, label, Icon, countKey }) => (
-          <NavLink key={to} to={to} className={linkClasses}>
+          <NavLink key={to} to={to} className={linkClasses} onClick={onNavigate}>
             <Icon className="h-5 w-5 shrink-0" />
             {label}
             {countKey === "events" && upcomingEventsCount > 0 && (
@@ -71,7 +74,7 @@ export function Sidebar() {
             )}
           </NavLink>
         ))}
-        <NavLink to="/messages" className={linkClasses}>
+        <NavLink to="/messages" className={linkClasses} onClick={onNavigate}>
           <ChatIcon className="h-5 w-5 shrink-0" />
           Messages
           {unreadMessageCount > 0 && (
@@ -82,11 +85,11 @@ export function Sidebar() {
         </NavLink>
         {user && (
           <>
-            <NavLink to="/saved" className={linkClasses}>
+            <NavLink to="/saved" className={linkClasses} onClick={onNavigate}>
               <BookmarkIcon className="h-5 w-5 shrink-0" />
               Saved
             </NavLink>
-            <NavLink to={`/profile/${user.id}`} className={linkClasses}>
+            <NavLink to={`/profile/${user.id}`} className={linkClasses} onClick={onNavigate}>
               <UserCircleIcon className="h-5 w-5 shrink-0" />
               Profile
             </NavLink>
@@ -104,6 +107,14 @@ export function Sidebar() {
           </p>
         </div>
       )}
+    </>
+  );
+}
+
+export function Sidebar() {
+  return (
+    <aside className="hidden w-60 shrink-0 flex-col gap-4 lg:flex">
+      <SidebarNavContent />
     </aside>
   );
 }

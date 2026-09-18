@@ -6,6 +6,7 @@ import eventsRoutes from "./events.routes";
 import feedRoutes from "./feed.routes";
 import friendsRoutes from "./friends.routes";
 import interestsRoutes from "./interests.routes";
+import mediaRoutes from "./media.routes";
 import messagesRoutes from "./messages.routes";
 import notificationsRoutes from "./notifications.routes";
 import postsRoutes from "./posts.routes";
@@ -33,5 +34,6 @@ router.use("/search", searchRoutes);
 router.use("/notifications", notificationsRoutes);
 router.use("/friends", friendsRoutes);
 router.use("/messages", messagesRoutes);
+router.use("/media", mediaRoutes);
 
 export default router;

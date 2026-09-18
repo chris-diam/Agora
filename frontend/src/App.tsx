@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Navigate, Outlet, Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import { ChatDock } from "./components/ChatDock";
+import { MobileNavDrawer } from "./components/MobileNavDrawer";
 import { Navbar } from "./components/Navbar";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Sidebar } from "./components/Sidebar";
@@ -54,7 +56,10 @@ function ShellLayout() {
   return (
     <div className="mx-auto flex max-w-7xl gap-6 px-4 py-6">
       <Sidebar />
-      <main className="min-w-0 flex-1">
+      {/* Extra bottom padding on mobile only — the fixed ChatDock bubble
+          would otherwise permanently sit over the last bit of content,
+          since RightRail stacks below the feed instead of beside it. */}
+      <main className="min-w-0 flex-1 pb-20 lg:pb-0">
         <Outlet />
       </main>
     </div>
@@ -71,6 +76,8 @@ function PlainLayout() {
 }
 
 export default function App() {
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
   return (
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
@@ -79,7 +86,8 @@ export default function App() {
             <Router>
               <div className="relative min-h-screen">
                 <BackgroundBlobs />
-                <Navbar />
+                <Navbar onMenuClick={() => setMobileNavOpen(true)} />
+                <MobileNavDrawer open={mobileNavOpen} onClose={() => setMobileNavOpen(false)} />
                 <ToastStack />
                 <ChatDock />
                 <Routes>

@@ -38,7 +38,7 @@ export function ChatPopup({ userId, onClose, onMinimize }: ChatPopupProps) {
   };
 
   return (
-    <div className="flex h-96 w-72 flex-col overflow-hidden rounded-t-2xl border border-agora-border bg-agora-surface/95 shadow-xl shadow-black/30 backdrop-blur-xl">
+    <div className="flex h-96 w-72 shrink-0 flex-col overflow-hidden rounded-t-2xl border border-agora-border bg-agora-surface/95 shadow-xl shadow-black/30 backdrop-blur-xl">
       <div className="flex items-center gap-2 border-b border-agora-border px-3 py-2">
         <Link to={`/profile/${userId}`} className="flex min-w-0 flex-1 items-center gap-2">
           <Avatar name={partner?.displayName ?? "?"} imageUrl={partner?.profileImageUrl} size="sm" />

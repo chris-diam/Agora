@@ -1,5 +1,6 @@
 import { PostCategory, PostMediaType } from "@prisma/client";
 import { Request, Response } from "express";
+import { createMediaAsset } from "../services/media.service";
 import * as postsService from "../services/posts.service";
 import { sendSuccess } from "../utils/apiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
@@ -30,10 +31,8 @@ export const getPost = asyncHandler(async (req: Request, res: Response) => {
 export const createPost = asyncHandler(async (req: Request, res: Response) => {
   let media: { mediaUrl: string; mediaType: PostMediaType } | undefined;
   if (req.file) {
-    media = {
-      mediaUrl: `/uploads/posts/${req.file.filename}`,
-      mediaType: req.file.mimetype.startsWith("video/") ? "VIDEO" : "IMAGE",
-    };
+    const mediaUrl = await createMediaAsset(req.file.buffer, req.file.mimetype);
+    media = { mediaUrl, mediaType: req.file.mimetype.startsWith("video/") ? "VIDEO" : "IMAGE" };
   } else if (req.body.linkUrl) {
     media = { mediaUrl: req.body.linkUrl, mediaType: "LINK" };
   }

@@ -3,6 +3,7 @@ import { prisma } from "../lib/prisma";
 import { AppError } from "../utils/AppError";
 import { buildPaginationMeta, PaginationParams } from "../utils/pagination";
 import { CreatePostInput, UpdatePostInput } from "../validators/posts.validators";
+import { deleteMediaAssetByUrl } from "./media.service";
 
 const authorSelect = {
   id: true,
@@ -171,7 +172,8 @@ export const updatePost = async (postId: string, userId: string, input: UpdatePo
 
 export const deletePost = async (postId: string, userId: string) => {
   await assertPostOwner(postId, userId);
-  await prisma.post.delete({ where: { id: postId } });
+  const deleted = await prisma.post.delete({ where: { id: postId }, select: { mediaUrl: true } });
+  await deleteMediaAssetByUrl(deleted.mediaUrl);
 };
 
 export const likePost = async (postId: string, userId: string) => {

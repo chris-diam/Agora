@@ -21,7 +21,3 @@ npm-debug.log*
 
 # Prisma
 backend/prisma/dev.db
-
-# User-uploaded files (local-disk storage — see backend/src/middleware/upload.middleware.ts)
-backend/uploads/avatars/*
-!backend/uploads/avatars/.gitkeep

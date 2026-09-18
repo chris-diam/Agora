@@ -2,7 +2,6 @@ import cors from "cors";
 import express from "express";
 import helmet from "helmet";
 import morgan from "morgan";
-import path from "path";
 import { env } from "./config";
 import { errorMiddleware } from "./middleware/error.middleware";
 import { notFoundMiddleware } from "./middleware/notFound.middleware";
@@ -22,18 +21,9 @@ if (env.NODE_ENV !== "test") {
   app.use(morgan(env.NODE_ENV === "development" ? "dev" : "combined"));
 }
 
-app.use(
-  "/uploads",
-  express.static(path.join(__dirname, "..", "uploads"), {
-    setHeaders: (res) => {
-      // Helmet's default Cross-Origin-Resource-Policy (same-origin) would
-      // otherwise block the frontend (a different origin in dev/prod) from
-      // loading these images in an <img> tag.
-      res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-    },
-  })
-);
-
+// Uploaded avatars/post media are served from GET /api/media/:id (see
+// media.routes.ts) — they're stored in the database, not on disk, so there's
+// no static file mount here.
 app.use("/api", routes);
 
 app.use(notFoundMiddleware);

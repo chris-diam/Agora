@@ -1,12 +1,16 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Avatar } from "./Avatar";
-import { PlusIcon } from "./icons";
+import { MenuIcon, PlusIcon } from "./icons";
 import { NotificationsBell } from "./NotificationsBell";
 import { SearchBar } from "./SearchBar";
 import { ThemeSwitcher } from "./ThemeSwitcher";
 
-export function Navbar() {
+interface NavbarProps {
+  onMenuClick: () => void;
+}
+
+export function Navbar({ onMenuClick }: NavbarProps) {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -17,14 +21,26 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-20 border-b border-agora-border bg-agora-surface/70 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
+        <button
+          type="button"
+          onClick={onMenuClick}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-agora-muted hover:bg-white/5 lg:hidden"
+          aria-label="Open menu"
+        >
+          <MenuIcon className="h-5 w-5" />
+        </button>
+
         <Link to="/" className="flex shrink-0 items-center">
-          <img src="/logo-full.svg" alt="Agora" className="h-9 w-auto sm:h-10" />
+          <img src="/logo-mark.svg" alt="Agora" className="h-8 w-8 sm:hidden" />
+          <img src="/logo-full.svg" alt="Agora" className="hidden h-9 w-auto sm:block sm:h-10" />
         </Link>
 
-        <SearchBar />
+        <div className="order-3 w-full min-w-0 sm:order-0 sm:w-auto sm:flex-1">
+          <SearchBar />
+        </div>
 
-        <nav className="ml-auto flex shrink-0 items-center gap-3 text-sm text-agora-muted">
+        <nav className="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-3 text-sm text-agora-muted">
           <ThemeSwitcher />
           {isAuthenticated && user ? (
             <>

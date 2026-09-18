@@ -23,7 +23,7 @@ export const updateMe = asyncHandler(async (req: Request, res: Response) => {
 
 export const uploadAvatar = asyncHandler(async (req: Request, res: Response) => {
   if (!req.file) throw new AppError("No file uploaded", 400);
-  const user = await usersService.updateAvatar(req.user!.id, req.file.filename);
+  const user = await usersService.updateAvatar(req.user!.id, req.file);
   return sendSuccess(res, user);
 });
 

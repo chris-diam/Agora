@@ -7,6 +7,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Uploaded file bytes (avatars, post images/videos), stored in the database
+// rather than on local disk. Render's free-tier filesystem is ephemeral —
+// it's wiped on every redeploy — so anything written to disk (the earlier
+// approach) silently disappears the next time the backend deploys. Postgres
+// is the one thing that actually persists. Served via GET /api/media/:id;
+// the id itself lives in User.profileImageUrl / Post.mediaUrl as
+// "/api/media/<id>" so existing list/feed responses stay small (no base64
+// inline in every post/user object).
+model MediaAsset {
+  id        String   @id @default(cuid())
+  mimeType  String
+  data      Bytes
+  createdAt DateTime @default(now())
+}
+
 // ────────────────────────────────
 // USERS & INTERESTS
 // ────────────────────────────────

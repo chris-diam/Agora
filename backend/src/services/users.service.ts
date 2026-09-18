@@ -1,12 +1,10 @@
 import { Prisma } from "@prisma/client";
-import fs from "fs/promises";
-import path from "path";
 import { prisma } from "../lib/prisma";
-import { AVATAR_DIR } from "../middleware/upload.middleware";
 import { AppError } from "../utils/AppError";
 import { buildPaginationMeta, PaginationParams } from "../utils/pagination";
 import { UpdateProfileInput } from "../validators/users.validators";
 import { areFriends } from "./friends.service";
+import { createMediaAsset, deleteMediaAssetByUrl } from "./media.service";
 import * as notificationsService from "./notifications.service";
 
 // Public-safe projection — never select passwordHash here. Exported for
@@ -86,22 +84,24 @@ export const getUserById = async (id: string, viewerId?: string) => {
   };
 };
 
-export const updateAvatar = async (userId: string, filename: string) => {
+export const updateAvatar = async (userId: string, file: Express.Multer.File) => {
   const existing = await prisma.user.findUnique({ where: { id: userId }, select: { profileImageUrl: true } });
 
-  // Best-effort cleanup of the previous avatar file — only if it was one we
-  // stored ourselves (not, say, a Google-provided URL) — so repeated
-  // re-uploads don't leak disk space indefinitely.
-  if (existing?.profileImageUrl?.startsWith("/uploads/avatars/")) {
-    const oldPath = path.join(AVATAR_DIR, path.basename(existing.profileImageUrl));
-    fs.unlink(oldPath).catch(() => {});
-  }
+  const mediaUrl = await createMediaAsset(file.buffer, file.mimetype);
 
-  return prisma.user.update({
+  const user = await prisma.user.update({
     where: { id: userId },
-    data: { profileImageUrl: `/uploads/avatars/${filename}` },
+    data: { profileImageUrl: mediaUrl },
     select: publicUserSelect,
   });
+
+  // Best-effort cleanup of the previous avatar — only if it was one we
+  // stored ourselves (not, say, a Google-provided URL) — so repeated
+  // re-uploads don't leak rows indefinitely. Done after the swap so a
+  // failure here never leaves the user without an avatar.
+  await deleteMediaAssetByUrl(existing?.profileImageUrl);
+
+  return user;
 };
 
 export const updateProfile = async (userId: string, data: UpdateProfileInput) => {
