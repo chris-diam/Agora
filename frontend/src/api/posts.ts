@@ -6,6 +6,7 @@ export interface ListPostsParams {
   limit?: number;
   category?: PostCategory | PostCategory[];
   authorId?: string;
+  communityId?: string;
 }
 
 export interface CreatePostInput {
@@ -17,6 +18,9 @@ export interface CreatePostInput {
   // (e.g. YouTube) to embed instead.
   mediaFile?: File;
   linkUrl?: string;
+  // Set to publish into a community's Discussions tab instead of the
+  // general feed — the poster must already be a member.
+  communityId?: string;
 }
 
 export type UpdatePostInput = Partial<Pick<CreatePostInput, "content" | "category" | "city" | "country">>;
@@ -33,6 +37,7 @@ export const createPost = (input: CreatePostInput) => {
   if (input.country) formData.append("country", input.country);
   if (input.mediaFile) formData.append("media", input.mediaFile);
   else if (input.linkUrl) formData.append("linkUrl", input.linkUrl);
+  if (input.communityId) formData.append("communityId", input.communityId);
 
   return apiFetch<Post>("/posts", { method: "POST", body: formData });
 };

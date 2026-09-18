@@ -16,6 +16,8 @@ export const listEvents = asyncHandler(async (req: Request, res: Response) => {
         ? (req.query.category.split(",").map((c) => c.trim()) as EventCategory[])
         : undefined,
     date: typeof req.query.date === "string" ? req.query.date : undefined,
+    organizerId: typeof req.query.organizerId === "string" ? req.query.organizerId : undefined,
+    communityId: typeof req.query.communityId === "string" ? req.query.communityId : undefined,
   };
 
   const { items, pagination: meta } = await eventsService.listEvents(filters, pagination, req.user?.id);

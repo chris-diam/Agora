@@ -3,6 +3,7 @@ import { prisma } from "../lib/prisma";
 import { AppError } from "../utils/AppError";
 import { buildPaginationMeta, PaginationParams } from "../utils/pagination";
 import { CreatePostInput, UpdatePostInput } from "../validators/posts.validators";
+import { assertCommunityMember } from "./communities.service";
 import { deleteMediaAssetByUrl } from "./media.service";
 
 const authorSelect = {
@@ -63,6 +64,7 @@ export interface ListPostsFilters {
   // culture" section groups several categories into one feed.
   category?: PostCategory | PostCategory[];
   authorId?: string;
+  communityId?: string;
 }
 
 export const listPosts = async (
@@ -79,6 +81,7 @@ export const listPosts = async (
   const where: Prisma.PostWhereInput = {
     ...(categories ? { category: { in: categories } } : {}),
     ...(filters.authorId ? { authorId: filters.authorId } : {}),
+    ...(filters.communityId ? { communityId: filters.communityId } : {}),
   };
 
   const [rows, totalItems] = await Promise.all([
@@ -120,6 +123,8 @@ export const createPost = async (
   input: CreatePostInput,
   media?: { mediaUrl: string; mediaType: PostMediaType }
 ) => {
+  if (input.communityId) await assertCommunityMember(input.communityId, authorId);
+
   // The composer no longer asks for city/country directly — fall back to
   // the author's own profile location so the Local feed still has something
   // to group by.
@@ -137,6 +142,7 @@ export const createPost = async (
       country: input.country ?? author.country,
       mediaUrl: media?.mediaUrl,
       mediaType: media?.mediaType,
+      communityId: input.communityId,
     },
     include: postInclude,
   });

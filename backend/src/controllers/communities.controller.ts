@@ -10,6 +10,7 @@ export const listCommunities = asyncHandler(async (req: Request, res: Response) 
     city: typeof req.query.city === "string" ? req.query.city : undefined,
     country: typeof req.query.country === "string" ? req.query.country : undefined,
     category: typeof req.query.category === "string" ? req.query.category : undefined,
+    memberId: typeof req.query.memberId === "string" ? req.query.memberId : undefined,
   };
 
   const { items, pagination: meta } = await communitiesService.listCommunities(
@@ -17,6 +18,12 @@ export const listCommunities = asyncHandler(async (req: Request, res: Response) 
     pagination,
     req.user?.id
   );
+  return sendSuccess(res, items, 200, meta);
+});
+
+export const listMembers = asyncHandler(async (req: Request, res: Response) => {
+  const pagination = getPaginationParams(req.query);
+  const { items, pagination: meta } = await communitiesService.listCommunityMembers(req.params.id, pagination);
   return sendSuccess(res, items, 200, meta);
 });
 

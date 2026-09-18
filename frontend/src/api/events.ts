@@ -8,6 +8,8 @@ export interface ListEventsParams {
   country?: string;
   category?: EventCategory | EventCategory[];
   date?: string;
+  organizerId?: string;
+  communityId?: string;
 }
 
 export interface CreateEventInput {
@@ -23,6 +25,9 @@ export interface CreateEventInput {
   startDate: string;
   endDate?: string;
   imageFile?: File;
+  // Set to organize this event under a community — the organizer must
+  // already be a member.
+  communityId?: string;
 }
 
 export type UpdateEventInput = Partial<Omit<CreateEventInput, "imageFile">>;

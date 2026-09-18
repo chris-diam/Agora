@@ -5,9 +5,12 @@ import { CameraIcon, CloseIcon, LinkIcon } from "./icons";
 
 interface CreatePostProps {
   onCreated?: () => void;
+  /** Publishes into this community's Discussions tab instead of the general feed. */
+  communityId?: string;
+  placeholder?: string;
 }
 
-export function CreatePost({ onCreated }: CreatePostProps) {
+export function CreatePost({ onCreated, communityId, placeholder = "What's happening?" }: CreatePostProps) {
   const [content, setContent] = useState("");
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [mediaPreviewUrl, setMediaPreviewUrl] = useState<string | null>(null);
@@ -46,6 +49,7 @@ export function CreatePost({ onCreated }: CreatePostProps) {
       content: content.trim(),
       mediaFile: mediaFile ?? undefined,
       linkUrl: linkUrl.trim() || undefined,
+      communityId,
     });
 
     setContent("");
@@ -63,7 +67,7 @@ export function CreatePost({ onCreated }: CreatePostProps) {
       <textarea
         value={content}
         onChange={(event) => setContent(event.target.value)}
-        placeholder="What's happening?"
+        placeholder={placeholder}
         rows={3}
         maxLength={5000}
         className="w-full rounded-xl border border-agora-border bg-agora-surface p-2 text-sm focus:ring-2 focus:ring-agora/30 focus:outline-none"

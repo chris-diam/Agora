@@ -13,6 +13,9 @@ export const createPostSchema = z.object({
     // Only used when no file is attached — an external link (YouTube, etc.)
     // to render as the post's media instead of an uploaded file.
     linkUrl: z.string().url("Must be a valid URL").max(2000).optional(),
+    // Set when posting into a community's Discussions tab rather than the
+    // general feed — requires membership, checked in posts.service.
+    communityId: z.string().optional(),
   }),
 });
 
@@ -41,6 +44,7 @@ export const listPostsQuerySchema = z.object({
       .pipe(z.array(z.nativeEnum(PostCategory)).min(1))
       .optional(),
     authorId: z.string().optional(),
+    communityId: z.string().optional(),
   }),
 });
 

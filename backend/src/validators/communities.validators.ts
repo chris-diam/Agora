@@ -17,6 +17,16 @@ export const listCommunitiesQuerySchema = z.object({
     city: z.string().optional(),
     country: z.string().optional(),
     category: z.string().optional(),
+    // A user's own communities — backs the "Communities" section of a
+    // profile/artist page.
+    memberId: z.string().optional(),
+  }),
+});
+
+export const listCommunityMembersQuerySchema = z.object({
+  query: z.object({
+    page: z.string().optional(),
+    limit: z.string().optional(),
   }),
 });
 

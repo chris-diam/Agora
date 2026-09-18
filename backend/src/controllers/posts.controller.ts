@@ -17,6 +17,7 @@ export const listPosts = asyncHandler(async (req: Request, res: Response) => {
         ? (req.query.category.split(",").map((c) => c.trim()) as PostCategory[])
         : undefined,
     authorId: typeof req.query.authorId === "string" ? req.query.authorId : undefined,
+    communityId: typeof req.query.communityId === "string" ? req.query.communityId : undefined,
   };
 
   const { items, pagination: meta } = await postsService.listPosts(filters, pagination, req.user?.id);

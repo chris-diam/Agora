@@ -44,6 +44,7 @@ export interface ListCommunitiesFilters {
   city?: string;
   country?: string;
   category?: string;
+  memberId?: string;
 }
 
 export const listCommunities = async (
@@ -55,6 +56,7 @@ export const listCommunities = async (
     ...(filters.city ? { city: { equals: filters.city, mode: "insensitive" } } : {}),
     ...(filters.country ? { country: { equals: filters.country, mode: "insensitive" } } : {}),
     ...(filters.category ? { category: { equals: filters.category, mode: "insensitive" } } : {}),
+    ...(filters.memberId ? { members: { some: { userId: filters.memberId } } } : {}),
   };
 
   const [rows, totalItems] = await Promise.all([
@@ -125,4 +127,35 @@ export const leaveCommunity = async (communityId: string, userId: string) => {
   if (!existing) throw new AppError("You are not a member of this community", 404);
 
   await prisma.communityMember.delete({ where: { communityId_userId: { communityId, userId } } });
+};
+
+// Shared by posts.service and events.service — publishing a discussion post
+// or organizing an event "as" a community requires membership in it.
+export const assertCommunityMember = async (communityId: string, userId: string) => {
+  const membership = await prisma.communityMember.findUnique({
+    where: { communityId_userId: { communityId, userId } },
+    select: { communityId: true },
+  });
+  if (!membership) throw new AppError("You must be a member of this community to post here", 403);
+};
+
+export const listCommunityMembers = async (communityId: string, { page, limit, skip }: PaginationParams) => {
+  const community = await prisma.community.findUnique({ where: { id: communityId }, select: { id: true } });
+  if (!community) throw new AppError("Community not found", 404);
+
+  const [rows, totalItems] = await Promise.all([
+    prisma.communityMember.findMany({
+      where: { communityId },
+      include: { user: { select: creatorSelect } },
+      orderBy: { joinedAt: "asc" },
+      skip,
+      take: limit,
+    }),
+    prisma.communityMember.count({ where: { communityId } }),
+  ]);
+
+  return {
+    items: rows.map((row) => row.user),
+    pagination: buildPaginationMeta(page, limit, totalItems),
+  };
 };

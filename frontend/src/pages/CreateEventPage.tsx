@@ -1,7 +1,8 @@
 import { useRef, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCreateEvent } from "../hooks/useEvents";
+import { useCommunity } from "../hooks/useCommunities";
 import { CameraIcon, CloseIcon } from "../components/icons";
 import type { EventCategory } from "../types";
 
@@ -25,6 +26,10 @@ export function CreateEventPage() {
   const navigate = useNavigate();
   const createEvent = useCreateEvent();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [searchParams] = useSearchParams();
+  const communityId = searchParams.get("communityId") ?? undefined;
+  const { data: communityResult } = useCommunity(communityId ?? "");
+  const community = communityResult?.data;
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -116,6 +121,7 @@ export function CreateEventPage() {
         startDate: startDate.toISOString(),
         endDate: endDate?.toISOString(),
         imageFile: imageFile ?? undefined,
+        communityId,
       });
       navigate(`/events/${created.data.id}`);
     } catch (err) {
@@ -125,7 +131,12 @@ export function CreateEventPage() {
 
   return (
     <div className="mx-auto max-w-xl">
-      <h1 className="mb-4 text-xl font-semibold text-agora-text">Create event</h1>
+      <h1 className={`text-xl font-semibold text-agora-text ${community ? "mb-1" : "mb-4"}`}>Create event</h1>
+      {community && (
+        <p className="mb-4 text-sm text-agora-muted">
+          Organizing for <span className="font-medium text-agora-text">{community.name}</span>
+        </p>
+      )}
       <form
         onSubmit={handleSubmit}
         className="flex flex-col gap-4 rounded-2xl border border-agora-border bg-agora-surface/80 p-6 shadow-sm shadow-black/20 backdrop-blur-xl"

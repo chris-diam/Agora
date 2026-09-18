@@ -1,5 +1,5 @@
 import { apiFetch, buildQuery } from "./client";
-import type { Community } from "../types";
+import type { Community, PostAuthor } from "../types";
 
 export interface ListCommunitiesParams {
   page?: number;
@@ -7,6 +7,12 @@ export interface ListCommunitiesParams {
   city?: string;
   country?: string;
   category?: string;
+  memberId?: string;
+}
+
+export interface ListCommunityMembersParams {
+  page?: number;
+  limit?: number;
 }
 
 export interface CreateCommunityInput {
@@ -21,6 +27,9 @@ export const listCommunities = (params: ListCommunitiesParams = {}) =>
   apiFetch<Community[]>(`/communities${buildQuery(params)}`);
 
 export const getCommunity = (id: string) => apiFetch<Community>(`/communities/${id}`);
+
+export const listCommunityMembers = (id: string, params: ListCommunityMembersParams = {}) =>
+  apiFetch<PostAuthor[]>(`/communities/${id}/members${buildQuery(params)}`);
 
 export const createCommunity = (input: CreateCommunityInput) =>
   apiFetch<Community>("/communities", { method: "POST", body: JSON.stringify(input) });

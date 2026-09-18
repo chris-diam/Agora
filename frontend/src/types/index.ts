@@ -127,6 +127,7 @@ export interface EventItem {
   startDate: string;
   endDate: string | null;
   organizerId: string;
+  communityId: string | null;
   createdAt: string;
   updatedAt: string;
   organizer: PostAuthor;

@@ -1,5 +1,6 @@
 import { AttendanceStatus, EventCategory, Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma";
+import { assertCommunityMember } from "./communities.service";
 import { AppError } from "../utils/AppError";
 import { buildPaginationMeta, PaginationParams } from "../utils/pagination";
 import { CreateEventInput, UpdateEventInput } from "../validators/events.validators";
@@ -53,6 +54,8 @@ export interface ListEventsFilters {
   // several categories into one feed.
   category?: EventCategory | EventCategory[];
   date?: string; // YYYY-MM-DD
+  organizerId?: string;
+  communityId?: string;
 }
 
 export const listEvents = async (
@@ -70,16 +73,19 @@ export const listEvents = async (
     ...(filters.city ? { city: { equals: filters.city, mode: "insensitive" } } : {}),
     ...(filters.country ? { country: { equals: filters.country, mode: "insensitive" } } : {}),
     ...(categories ? { category: { in: categories } } : {}),
+    ...(filters.organizerId ? { organizerId: filters.organizerId } : {}),
+    ...(filters.communityId ? { communityId: filters.communityId } : {}),
   };
 
   if (filters.date) {
     const dayStart = new Date(`${filters.date}T00:00:00.000Z`);
     const dayEnd = new Date(`${filters.date}T23:59:59.999Z`);
     where.startDate = { gte: dayStart, lte: dayEnd };
-  } else {
+  } else if (!filters.organizerId) {
     // No explicit date filter: default to upcoming events only. A discovery
-    // feed showing already-finished events isn't useful, and there's no
-    // "browse past events" requirement in the MVP yet.
+    // feed showing already-finished events isn't useful. Exception: a
+    // specific organizer's own event list (e.g. their artist profile) shows
+    // their full history, past included — "places played" needs past events.
     where.startDate = { gte: new Date() };
   }
 
@@ -114,6 +120,8 @@ export const getEventById = async (id: string, viewerId?: string) => {
 };
 
 export const createEvent = async (organizerId: string, input: CreateEventInput, imageUrl?: string) => {
+  if (input.communityId) await assertCommunityMember(input.communityId, organizerId);
+
   const startDate = new Date(input.startDate);
   const endDate = input.endDate ? new Date(input.endDate) : undefined;
   validateDateRange(startDate, endDate);
@@ -131,6 +139,7 @@ export const createEvent = async (organizerId: string, input: CreateEventInput, 
       latitude: input.latitude,
       longitude: input.longitude,
       imageUrl,
+      communityId: input.communityId,
       startDate,
       endDate,
     },

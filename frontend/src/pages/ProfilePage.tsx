@@ -1,16 +1,19 @@
 import { useRef, useState } from "react";
 import type { ChangeEvent } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { resolveMediaUrl } from "../api/client";
 import { Avatar } from "../components/Avatar";
+import { EventCard } from "../components/EventCard";
 import { Feed } from "../components/Feed";
 import { CameraIcon, CloseIcon, LinkIcon } from "../components/icons";
 import { useAuth } from "../context/AuthContext";
 import { useChatDock } from "../context/SocketContext";
+import { useCommunities } from "../hooks/useCommunities";
+import { useEvents } from "../hooks/useEvents";
 import { useInterests, useSetMyInterests } from "../hooks/useInterests";
 import { usePosts } from "../hooks/usePosts";
 import { useFollowUser, useUnfollowUser, useUpdateProfile, useUploadAvatar, useUser } from "../hooks/useUsers";
-import type { PortfolioLink, Post } from "../types";
+import type { EventItem, PortfolioLink, Post } from "../types";
 
 export function ProfilePage() {
   const { id } = useParams<{ id: string }>();
@@ -92,6 +95,8 @@ export function ProfilePage() {
 
       {isOwnProfile && isEditing && <ProfileEditPanel onDone={() => setIsEditing(false)} />}
 
+      {profile.profession && <ArtistSections userId={profile.id} />}
+
       <MediaGrid posts={postsResult?.data ?? []} />
 
       <h2 className="text-lg font-medium text-agora-text">Posts</h2>
@@ -101,6 +106,87 @@ export function ProfilePage() {
         isError={postsError}
       />
     </div>
+  );
+}
+
+// Shown on any profile that's opted into the "artist page" fields
+// (profession set) — turns the plain profile into a mini cultural page:
+// what they're doing next, what communities they're part of, and where
+// they've played before. All derived from data that already exists
+// (organized events, community membership) — no separate profile entity.
+function ArtistSections({ userId }: { userId: string }) {
+  const { data: eventsResult } = useEvents({ organizerId: userId, limit: 50 });
+  const { data: communitiesResult } = useCommunities({ memberId: userId, limit: 6 });
+
+  const events = eventsResult?.data ?? [];
+  const now = Date.now();
+  const upcomingEvents = events
+    .filter((event) => new Date(event.startDate).getTime() >= now)
+    .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+  const pastEvents = events
+    .filter((event) => new Date(event.startDate).getTime() < now)
+    .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+
+  const placesPlayed = Array.from(
+    new Map(pastEvents.map((event) => [`${event.venueName ?? ""}|${event.city}`, event])).values()
+  ).slice(0, 6);
+
+  const communities = communitiesResult?.data ?? [];
+
+  if (upcomingEvents.length === 0 && communities.length === 0 && placesPlayed.length === 0) return null;
+
+  return (
+    <div className="flex flex-col gap-4">
+      {upcomingEvents.length > 0 && (
+        <section>
+          <h2 className="mb-2 text-lg font-medium text-agora-text">Upcoming events</h2>
+          <div className="flex flex-col gap-3">
+            {upcomingEvents.slice(0, 5).map((event) => (
+              <EventCard key={event.id} event={event} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {communities.length > 0 && (
+        <section>
+          <h2 className="mb-2 text-lg font-medium text-agora-text">Communities</h2>
+          <div className="flex flex-wrap gap-2">
+            {communities.map((community) => (
+              <Link
+                key={community.id}
+                to={`/communities/${community.id}`}
+                className="rounded-full border border-agora-border bg-agora-surface/80 px-3 py-1.5 text-sm text-agora-muted shadow-sm shadow-black/20 backdrop-blur-xl hover:bg-agora-surface"
+              >
+                {community.name}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {placesPlayed.length > 0 && (
+        <section>
+          <h2 className="mb-2 text-lg font-medium text-agora-text">Places played</h2>
+          <div className="flex flex-wrap gap-2">
+            {placesPlayed.map((event) => (
+              <PlaceChip key={event.id} event={event} />
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  );
+}
+
+function PlaceChip({ event }: { event: EventItem }) {
+  return (
+    <Link
+      to={`/events/${event.id}`}
+      className="rounded-full border border-agora-border bg-agora-surface/80 px-3 py-1.5 text-sm text-agora-muted shadow-sm shadow-black/20 backdrop-blur-xl hover:bg-agora-surface"
+    >
+      {event.venueName ?? event.city}
+    </Link>
   );
 }
 

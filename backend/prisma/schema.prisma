@@ -161,7 +161,7 @@ model Post {
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 
-  // Prepped for community posts later — unused by the API in the MVP.
+  // Set when this post was published into a community (its Discussions tab).
   communityId String?
   community   Community? @relation(fields: [communityId], references: [id], onDelete: SetNull)
 
@@ -255,12 +255,18 @@ model Event {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
+  // Optional — a community can organize an event under its own banner,
+  // same pattern as Post.communityId below.
+  communityId String?
+  community   Community? @relation(fields: [communityId], references: [id], onDelete: SetNull)
+
   organizer   User              @relation(fields: [organizerId], references: [id], onDelete: Cascade)
   attendances EventAttendance[]
 
   @@index([city, country])
   @@index([category])
   @@index([startDate])
+  @@index([communityId])
 }
 
 model EventAttendance {
@@ -294,7 +300,8 @@ model Community {
 
   creator User              @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   members CommunityMember[]
-  posts   Post[] // prepped, unused by API yet
+  posts   Post[]
+  events  Event[]
 
   @@index([city, country])
   @@index([category])

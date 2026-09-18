@@ -12,6 +12,13 @@ export const useCommunity = (id: string) =>
     enabled: Boolean(id),
   });
 
+export const useCommunityMembers = (id: string, params: communitiesApi.ListCommunityMembersParams = {}) =>
+  useQuery({
+    queryKey: ["communities", id, "members", params],
+    queryFn: () => communitiesApi.listCommunityMembers(id, params),
+    enabled: Boolean(id),
+  });
+
 export const useCreateCommunity = () => {
   const queryClient = useQueryClient();
   return useMutation({

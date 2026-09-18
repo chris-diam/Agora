@@ -14,6 +14,9 @@ export const createEventSchema = z.object({
     longitude: z.number().min(-180).max(180).optional(),
     startDate: z.string().datetime({ message: "startDate must be a valid ISO 8601 datetime" }),
     endDate: z.string().datetime({ message: "endDate must be a valid ISO 8601 datetime" }).optional(),
+    // Set when organizing this event under a community — requires
+    // membership, checked in events.service.
+    communityId: z.string().optional(),
   }),
 });
 
@@ -53,6 +56,8 @@ export const listEventsQuerySchema = z.object({
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/, "date must be in YYYY-MM-DD format")
       .optional(),
+    organizerId: z.string().optional(),
+    communityId: z.string().optional(),
   }),
 });
 
