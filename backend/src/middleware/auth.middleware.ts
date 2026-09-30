@@ -1,15 +1,13 @@
 import { NextFunction, Request, Response } from "express";
-import { prisma } from "../lib/prisma";
 import { asyncHandler } from "../utils/asyncHandler";
 import { AppError } from "../utils/AppError";
-import { verifyToken } from "../utils/jwt";
+import { findOrProvisionUser, verifyAccessToken } from "../services/keycloak.service";
 
 /**
- * Requires a valid `Authorization: Bearer <token>` header. Attaches the
- * authenticated user (id/username/email only) to req.user. We look the user
- * up on every request (rather than trusting the JWT payload alone) so a
- * deleted/deactivated account is rejected immediately instead of staying
- * valid until the token expires.
+ * Requires a valid `Authorization: Bearer <token>` header — a Keycloak
+ * access token, verified against the realm's JWKS. Attaches the linked
+ * local user (creating/linking it on first sight, see keycloak.service.ts)
+ * to req.user.
  */
 export const requireAuth = asyncHandler(async (req: Request, _res: Response, next: NextFunction) => {
   const header = req.headers.authorization;
@@ -20,22 +18,15 @@ export const requireAuth = asyncHandler(async (req: Request, _res: Response, nex
 
   const token = header.slice("Bearer ".length).trim();
 
-  let payload;
+  let claims;
   try {
-    payload = verifyToken(token);
+    claims = await verifyAccessToken(token);
   } catch {
     throw new AppError("Invalid or expired token", 401);
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: payload.sub },
-    select: { id: true, username: true, email: true },
-  });
+  const user = await findOrProvisionUser(claims);
 
-  if (!user) {
-    throw new AppError("User no longer exists", 401);
-  }
-
-  req.user = user;
+  req.user = { id: user.id, username: user.username, email: user.email };
   next();
 });

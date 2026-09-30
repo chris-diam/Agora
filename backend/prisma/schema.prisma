@@ -30,13 +30,17 @@ model User {
   id           String  @id @default(cuid())
   username     String  @unique
   email        String  @unique
-  // Nullable: a Google-only account has no password. Never nullable in
-  // spirit for a local-signup account — auth.service.ts enforces that one
-  // of passwordHash/googleId is always set at creation time.
+  // Dead since the Keycloak migration — kept (nullable, unused) rather than
+  // dropped immediately, to avoid coupling a destructive column drop to the
+  // auth rewrite. Safe to remove in a later cleanup migration.
   passwordHash String?
-  // Set when the account was created via (or later linked to) Google
-  // sign-in. Nullable because most accounts today are email/password.
   googleId     String? @unique
+  // The Keycloak-issued subject (`sub` claim) this account is linked to.
+  // Nullable only for the brief window between migration and every
+  // pre-existing account's first post-cutover login (see keycloak.service.ts
+  // — accounts get linked by email match on first sight, same pattern
+  // googleId used to).
+  keycloakId   String? @unique
   displayName  String
   bio          String?
   // Free-form creative role (e.g. "Saxophonist", "Fashion Designer") — an

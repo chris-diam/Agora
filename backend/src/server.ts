@@ -4,7 +4,7 @@ import app from "./app";
 import { env } from "./config";
 import { prisma } from "./lib/prisma";
 import { setSocketServer } from "./lib/socket";
-import { verifyToken } from "./utils/jwt";
+import { findOrProvisionUser, verifyAccessToken } from "./services/keycloak.service";
 
 // Socket.io needs a raw http.Server to attach to (not just the Express app)
 // so the same port serves both regular HTTP and WebSocket upgrades.
@@ -14,18 +14,20 @@ const io = new Server(httpServer, {
   cors: { origin: env.CORS_ORIGIN ?? true },
 });
 
-// Every socket connection must present the same JWT used for REST auth —
-// sent as `auth: { token }` in the client's connection options, not a
-// header (the initial WS handshake doesn't carry custom headers the same
-// way a fetch() does).
+// Every socket connection must present the same Keycloak access token used
+// for REST auth — sent as `auth: { token }` in the client's connection
+// options, not a header (the initial WS handshake doesn't carry custom
+// headers the same way a fetch() does). Runs once per connection, not per
+// message — the frontend passes `auth` as a function (re-evaluated on every
+// reconnect) so a token that expired between connections doesn't strand a
+// long-open tab, see SocketContext.tsx.
 io.use(async (socket, next) => {
   try {
     const token = socket.handshake.auth?.token as string | undefined;
     if (!token) return next(new Error("Authentication required"));
 
-    const payload = verifyToken(token);
-    const user = await prisma.user.findUnique({ where: { id: payload.sub }, select: { id: true } });
-    if (!user) return next(new Error("Invalid token"));
+    const claims = await verifyAccessToken(token);
+    const user = await findOrProvisionUser(claims);
 
     socket.data.userId = user.id;
     next();

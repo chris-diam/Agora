@@ -1,14 +1,13 @@
 import { Router } from "express";
 import * as authController from "../controllers/auth.controller";
 import { requireAuth } from "../middleware/auth.middleware";
-import { validate } from "../middleware/validate.middleware";
-import { googleAuthSchema, loginSchema, registerSchema } from "../validators/auth.validators";
 
 const router = Router();
 
-router.post("/register", validate(registerSchema), authController.register);
-router.post("/login", validate(loginSchema), authController.login);
-router.post("/google", validate(googleAuthSchema), authController.googleLogin);
+// Login/registration itself happens entirely on Keycloak's hosted pages —
+// this API's job is just to hand back the local profile for whichever
+// Keycloak-authenticated user is making the request (see requireAuth /
+// keycloak.service.ts for how that user gets linked/provisioned).
 router.get("/me", requireAuth, authController.me);
 
 export default router;

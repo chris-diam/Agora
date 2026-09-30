@@ -7,11 +7,12 @@ const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   PORT: z.coerce.number().default(4000),
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
-  JWT_SECRET: z.string().min(1, "JWT_SECRET is required"),
-  JWT_EXPIRES_IN: z.string().default("7d"),
-  // Optional: Google sign-in is disabled (with a clear error, not a crash)
-  // until this is set. See README for how to obtain one.
-  GOOGLE_CLIENT_ID: z.string().optional(),
+  // The realm's base URL (e.g. http://localhost:8080 in dev, the Render
+  // Keycloak service's URL in production) — REST/Socket.io auth verify
+  // every access token against this realm's JWKS. See keycloak.service.ts.
+  KEYCLOAK_URL: z.string().min(1, "KEYCLOAK_URL is required"),
+  KEYCLOAK_REALM: z.string().min(1, "KEYCLOAK_REALM is required"),
+  KEYCLOAK_CLIENT_ID: z.string().min(1, "KEYCLOAK_CLIENT_ID is required"),
   // Unset in dev (reflects the request origin). Set to the deployed
   // frontend's exact origin in production, e.g. https://myapp.pages.dev
   CORS_ORIGIN: z.string().optional(),

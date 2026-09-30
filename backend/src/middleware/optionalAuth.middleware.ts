@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import { prisma } from "../lib/prisma";
 import { asyncHandler } from "../utils/asyncHandler";
-import { verifyToken } from "../utils/jwt";
+import { findOrProvisionUser, verifyAccessToken } from "../services/keycloak.service";
 
 /**
  * Like requireAuth, but never rejects the request — a missing or invalid
@@ -16,12 +15,9 @@ export const optionalAuth = asyncHandler(async (req: Request, _res: Response, ne
   const token = header.slice("Bearer ".length).trim();
 
   try {
-    const payload = verifyToken(token);
-    const user = await prisma.user.findUnique({
-      where: { id: payload.sub },
-      select: { id: true, username: true, email: true },
-    });
-    if (user) req.user = user;
+    const claims = await verifyAccessToken(token);
+    const user = await findOrProvisionUser(claims);
+    req.user = { id: user.id, username: user.username, email: user.email };
   } catch {
     // Invalid/expired token on an optional-auth route — treat as anonymous
     // rather than failing the request.

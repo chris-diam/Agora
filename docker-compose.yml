@@ -17,5 +17,23 @@ services:
       timeout: 5s
       retries: 5
 
+  # Local-dev-only identity provider, matched to production Keycloak by the
+  # exported realm below. `start-dev` needs no real database (embedded
+  # storage) — good enough for iterating on the realm/client config; the
+  # production instance (Render) is configured separately and persists to
+  # its own Neon database.
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: social_platform_keycloak
+    restart: unless-stopped
+    command: start-dev --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import
+
 volumes:
   postgres_data:
