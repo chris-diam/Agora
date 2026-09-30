@@ -13,5 +13,12 @@ COPY --from=builder /opt/keycloak/ /opt/keycloak/
 # still gets entered by hand in the Admin Console per environment.
 COPY kyma-realm.json /opt/keycloak/data/import/kyma-realm.json
 
+
+# Render's free tier caps the container at 512MB. Left to its own container-
+# aware defaults, the JVM sized its heap up to ~490MB at idle — a hair under
+# the OOM line before any real traffic. Capping it explicitly leaves real
+# headroom (verified locally: ~400MB/512MB idle instead of ~490MB/512MB).
+ENV JAVA_OPTS_APPEND="-Xms64m -Xmx200m"
+
 ENTRYPOINT ["/opt/keycloak/bin/kc.sh"]
-CMD ["start", "--optimized", "--hostname-strict=false", "--http-enabled=true", "--proxy-headers=xforwarded", "--import-realm"]
+CMD ["start", "--optimized", "--hostname-strict=false", "--http-enabled=true", "--proxy-headers=xforwarded", "--cache=local", "--import-realm"]
