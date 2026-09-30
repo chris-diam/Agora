@@ -4,7 +4,7 @@ An alternative, transparency-first social platform: local/national/international
 
 > **Status:** MVP in progress. Building in phases — architecture → database → backend → API → frontend → styling. See `PHASES.md`-style progress below.
 
-> **Deploying this?** See [`DEPLOYMENT.md`](./DEPLOYMENT.md) for a concrete free-tier stack (Neon + Render + Cloudflare Pages), verified against this repo's own `Dockerfile`.
+> **Deploying this?** See [`DEPLOYMENT.md`](./DEPLOYMENT.md) for a concrete free-tier stack (Neon + Render + Cloudflare Workers (static assets)), verified against this repo's own `Dockerfile`.
 
 ## 1. Architecture
 

@@ -10,8 +10,8 @@ A concrete, all-free-tier stack for getting this app live on the internet (one p
 | Identity | [Keycloak](https://www.keycloak.org) on [Render](https://render.com) ✅ | Self-hosted auth — login, registration, and Google sign-in (as a federated identity provider) all happen on Keycloak's own hosted pages, not in this app's own code |
 | Keycloak's database | [Neon](https://neon.tech) ✅ | A second, separate Neon project — keeps Keycloak's schema fully isolated from the app's own data |
 | Backend API | [Render](https://render.com) ✅ | Free Web Service, builds straight from the repo's `Dockerfile` |
-| Frontend | [Cloudflare Pages](https://pages.cloudflare.com) ✅ | Free static hosting, connects to the repo, builds on every push |
-| Domain | Render/Pages give you a free subdomain automatically (`*.onrender.com`, `*.pages.dev`) — no separate registration needed to go live. A custom domain from [free-for.dev's domain list](https://free-for.dev/#/?id=domain) is an optional extra step layered on top (see bottom). |
+| Frontend | [Cloudflare Workers (static assets)](https://pages.cloudflare.com) ✅ | Free static hosting, connects to the repo, builds on every push |
+| Domain | Render/Pages give you a free subdomain automatically (`*.onrender.com`, `*.workers.dev`) — no separate registration needed to go live. A custom domain from [free-for.dev's domain list](https://free-for.dev/#/?id=domain) is an optional extra step layered on top (see bottom). |
 
 All dashboards deploy by connecting to a **GitHub repo** — that's the one prerequisite.
 
@@ -64,7 +64,7 @@ Steps:
 
 The `kyma` realm and `kyma-web` client (Authorization Code + PKCE, no client secret, self-registration enabled) auto-import on first boot from `keycloak/kyma-realm.json` — no manual realm/client setup needed. Two things still need doing by hand, per environment (deliberately not in the committed export — see below):
 
-1. In the Admin Console (`https://your-keycloak.onrender.com/admin/master/console/`, log in with the `KC_BOOTSTRAP_ADMIN_*` credentials) → switch to the **kyma** realm → **Clients** → `kyma-web` → confirm **Valid redirect URIs** includes your real Cloudflare Pages URL (add it if the committed realm export doesn't already list it).
+1. In the Admin Console (`https://your-keycloak.onrender.com/admin/master/console/`, log in with the `KC_BOOTSTRAP_ADMIN_*` credentials) → switch to the **kyma** realm → **Clients** → `kyma-web` → confirm **Valid redirect URIs** includes your real Cloudflare Workers (static assets) URL (add it if the committed realm export doesn't already list it).
 2. **Identity providers** → **Add provider** → **Google**:
    - Client ID / Client Secret: from your Google Cloud Console OAuth client (**Credentials**). This is the first point in the whole stack that actually uses the Client Secret — the old direct-Google-Identity-Services flow never needed it.
    - Note the **Redirect URI** Keycloak shows you (`https://your-keycloak.onrender.com/realms/kyma/broker/google/endpoint`) and add it to that same Google OAuth client's **Authorized redirect URIs** in Google Cloud Console.
@@ -91,35 +91,33 @@ Why these two aren't in `keycloak/kyma-realm.json`: the redirect URI is environm
 
 Free-tier note: same sleep/wake behavior as before — fine for a hobby project. One nuance specific to Keycloak-based auth: the backend caches Keycloak's JWKS signing keys after first use, so an already-issued token mostly keeps verifying fine even while Keycloak itself naps; it's new logins and near-expiry token refreshes that hit Keycloak's own cold start.
 
-## 4. Frontend — Cloudflare Pages
+## 4. Frontend — Cloudflare Workers (static assets)
 
-1. **Workers & Pages → Create → Pages → Connect to Git**, pick this repo.
-2. Build settings:
-   - **Root directory**: `frontend`
-   - **Build command**: `npm run build`
-   - **Build output directory**: `dist`
-3. Environment variables:
+1. **Workers & Pages → Create → connect this repo**, using the Workers-with-static-assets build path (root directory `frontend`, build command `npm run build`, output directory `dist`).
+2. Under the Worker's **Settings → Builds → Variables and secrets**, add:
    - `VITE_API_URL` — `https://your-service.onrender.com/api` (the backend URL from step 3, **with** `/api` on the end)
    - `VITE_KEYCLOAK_URL` — the Keycloak service's URL from step 2b
    - `VITE_KEYCLOAK_REALM` — `kyma`
    - `VITE_KEYCLOAK_CLIENT_ID` — `kyma-web`
-4. Deploy. Cloudflare gives you a URL like `https://your-app.pages.dev`.
-5. **Go back to Render** (the backend service) and set `CORS_ORIGIN` to that exact URL, then redeploy the backend.
+3. Deploy. Cloudflare gives you a URL like `https://your-app.workers.dev`.
+4. **Go back to Render** (the backend service) and set `CORS_ORIGIN` to that exact URL, then redeploy the backend.
+
+Saving env vars alone doesn't rebuild an already-deployed Worker — it only takes effect on the *next* build. Trigger one with a new commit (or use the dashboard's own redeploy action if using the "Deployments" tab rather than the "New deployment" static-upload flow, which bypasses the build step entirely and won't pick up env vars at all).
 6. **Go back to Keycloak's Admin Console** (step 2c.1) and confirm the `kyma-web` client's redirect URIs include this same URL.
 
 At this point the app is live, with real login/registration/Google sign-in all handled by Keycloak, for $0/month (or ~$7-14/month if you've upgraded Keycloak and/or the backend off the free tier for faster cold starts).
 
 ## 5. Optional: a custom domain
 
-Render and Cloudflare Pages both support attaching a custom domain for free (you only pay if the domain itself isn't free). To use a genuinely free domain name instead of `*.pages.dev`:
+Render and Cloudflare Workers (static assets) both support attaching a custom domain for free (you only pay if the domain itself isn't free). To use a genuinely free domain name instead of `*.workers.dev`:
 
 - [free-for.dev's domain section](https://free-for.dev/#/?id=domain) lists options like `eu.org` (manual review, real custom domain) or various "js.org"-style community subdomain services.
 - [DigitalPlat Domains](https://domain.digitalplat.org) (operated by EdgeAlphix LLC) is one such service — free subdomains under `*.dpdns.org`, `*.qzz.io`, `*.us.kg`, `*.xx.kg`, or `*.qd.je`. It's a real, ToS/AUP-governed registrar (not a throwaway), so a name here (e.g. `agora.dpdns.org`) is fine to actually launch on. Steps:
   1. Sign up at [dash.domain.digitalplat.org/auth/register](https://dash.domain.digitalplat.org/auth/register) and register a name, e.g. `agora.dpdns.org`.
   2. It supports "bring your own DNS" — delegate the domain's nameservers to Cloudflare (add the domain to a free Cloudflare account, which gives you two nameservers; set those as the domain's NS records in the DigitalPlat dashboard). This hands you full DNS record control (CNAME, etc.), which a bare subdomain registrar alone wouldn't give you.
-  3. In Cloudflare's DNS tab for the zone, add a CNAME for the root (or `www`) pointing at the Cloudflare Pages `*.pages.dev` address, a CNAME for `api` pointing at the Render backend's `*.onrender.com` address, and a CNAME for `auth` pointing at the Render Keycloak service's `*.onrender.com` address.
-  4. Add each hostname as a custom domain in the respective dashboard (Cloudflare Pages, Render backend, Render Keycloak) — each will verify via the CNAME and issue its own TLS cert.
-  5. Update `VITE_API_URL` (Cloudflare Pages) to `https://api.agora.dpdns.org/api`, `CORS_ORIGIN` (Render backend) to `https://agora.dpdns.org`, and `KEYCLOAK_URL`/`VITE_KEYCLOAK_URL` (Render backend + Cloudflare Pages) to `https://auth.agora.dpdns.org` — then update the `kyma-web` client's redirect URIs in Keycloak's Admin Console to match, and redeploy all three services.
+  3. In Cloudflare's DNS tab for the zone, add a CNAME for the root (or `www`) pointing at the Cloudflare Workers (static assets) `*.workers.dev` address, a CNAME for `api` pointing at the Render backend's `*.onrender.com` address, and a CNAME for `auth` pointing at the Render Keycloak service's `*.onrender.com` address.
+  4. Add each hostname as a custom domain in the respective dashboard (Cloudflare Workers (static assets), Render backend, Render Keycloak) — each will verify via the CNAME and issue its own TLS cert.
+  5. Update `VITE_API_URL` (Cloudflare Workers (static assets)) to `https://api.agora.dpdns.org/api`, `CORS_ORIGIN` (Render backend) to `https://agora.dpdns.org`, and `KEYCLOAK_URL`/`VITE_KEYCLOAK_URL` (Render backend + Cloudflare Workers (static assets)) to `https://auth.agora.dpdns.org` — then update the `kyma-web` client's redirect URIs in Keycloak's Admin Console to match, and redeploy all three services.
 - Whichever route you pick, all three dashboards have a "Custom Domains" tab where you add the hostname and follow their DNS instructions (usually just a CNAME record).
 
 ## Local Docker verification
