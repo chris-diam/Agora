@@ -1,10 +1,9 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { CreatePost } from "../components/CreatePost";
 import { EventCard } from "../components/EventCard";
 import { Feed } from "../components/Feed";
 import { RightRail } from "../components/RightRail";
-import { getToken } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { useEvents } from "../hooks/useEvents";
 import { useFeed } from "../hooks/useFeed";
@@ -22,17 +21,22 @@ const FEED_TABS: { key: FeedType; label: string }[] = [
 export function FeedPage() {
   const { user, isAuthenticated } = useAuth();
   const [searchParams] = useSearchParams();
-  // Seeded from the token's presence (synchronous) rather than
-  // isAuthenticated (which waits on the async "me" query) — otherwise a
-  // fresh page load always locks this lazy initializer to "chronological"
-  // before the auth check resolves, even for an already-logged-in user.
-  // A "type" query param (e.g. the sidebar's "Local" link) overrides that
-  // default — read once on mount, same as the token check.
+  // Whether Keycloak has an existing session isn't known synchronously
+  // (unlike the old localStorage JWT) — it resolves async via keycloak.init().
+  // Default to "chronological" and flip to "following" once auth resolves,
+  // unless a "type" query param (e.g. the sidebar's "Local" link) or a
+  // manual tab click already decided it.
   const [feedType, setFeedType] = useState<FeedType>(() => {
     const requested = searchParams.get("type");
-    if (requested && (VALID_FEED_TYPES as string[]).includes(requested)) return requested as FeedType;
-    return getToken() ? "following" : "chronological";
+    return requested && (VALID_FEED_TYPES as string[]).includes(requested) ? (requested as FeedType) : "chronological";
   });
+  const userPickedTab = useRef(false);
+
+  useEffect(() => {
+    if (userPickedTab.current || searchParams.get("type") || !isAuthenticated) return;
+    setFeedType("following");
+  }, [isAuthenticated, searchParams]);
+
   const [page, setPage] = useState(1);
   const [explainReasons, setExplainReasons] = useState(true);
 
@@ -40,6 +44,7 @@ export function FeedPage() {
   const { data: upcomingEvents, isLoading: eventsLoading } = useEvents({ limit: 10 });
 
   const handleTabChange = (type: FeedType) => {
+    userPickedTab.current = true;
     setFeedType(type);
     setPage(1);
   };

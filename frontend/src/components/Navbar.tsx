@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Avatar } from "./Avatar";
 import { LogoMarkIcon, MenuIcon, PlusIcon } from "./icons";
@@ -11,13 +11,7 @@ interface NavbarProps {
 }
 
 export function Navbar({ onMenuClick }: NavbarProps) {
-  const { user, isAuthenticated, logout } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
+  const { user, isAuthenticated, login, logout } = useAuth();
 
   return (
     <header className="sticky top-0 z-20 border-b border-agora-border bg-agora-surface/70 backdrop-blur-xl">
@@ -58,22 +52,18 @@ export function Navbar({ onMenuClick }: NavbarProps) {
               <Link to={`/profile/${user.id}`} title={user.displayName}>
                 <Avatar name={user.displayName} imageUrl={user.profileImageUrl} size="md" />
               </Link>
-              <button type="button" onClick={handleLogout} className="hover:text-agora-text">
+              <button type="button" onClick={logout} className="hover:text-agora-text">
                 Logout
               </button>
             </>
           ) : (
-            <>
-              <Link to="/login" className="hover:text-agora-text">
-                Login
-              </Link>
-              <Link
-                to="/register"
-                className="rounded-full bg-agora px-4 py-2 text-agora-on hover:bg-agora-hover"
-              >
-                Register
-              </Link>
-            </>
+            <button
+              type="button"
+              onClick={login}
+              className="rounded-full bg-agora px-4 py-2 text-agora-on hover:bg-agora-hover"
+            >
+              Log in
+            </button>
           )}
         </nav>
       </div>

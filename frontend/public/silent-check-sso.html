@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+  // Loaded by keycloak-js in a hidden iframe during `check-sso` — just hands
+  // the auth result back to the parent window, nothing renders here. Same
+  // origin as the app, so this itself never touches Keycloak's cookies
+  // directly; it only relays what the top-level `onLoad: 'check-sso'`
+  // navigation already resolved.
+  parent.postMessage(location.href, location.origin);
+</script>
+</body>
+</html>

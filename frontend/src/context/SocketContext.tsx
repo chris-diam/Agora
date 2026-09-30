@@ -2,7 +2,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { io, type Socket } from "socket.io-client";
-import { getToken, SOCKET_URL } from "../api/client";
+import { SOCKET_URL } from "../api/client";
+import { keycloak } from "../lib/keycloak";
 import { useAuth } from "./AuthContext";
 import type { PostAuthor } from "../types";
 
@@ -87,10 +88,15 @@ export function SocketProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const token = getToken();
-    if (!token) return;
+    if (!keycloak.token) return;
 
-    const socket = io(SOCKET_URL, { auth: { token } });
+    // `auth` as a function (not a plain object) so it's re-evaluated on
+    // every connection attempt, not just the first — Keycloak's access
+    // tokens are short-lived, and Socket.io only re-runs `auth` on
+    // (re)connect, not per message. A plain `{ token }` snapshot would
+    // strand a long-open tab's socket on the very first automatic
+    // reconnect after the original token expired.
+    const socket = io(SOCKET_URL, { auth: (cb) => cb({ token: keycloak.token }) });
     socketRef.current = socket;
 
     socket.on("notification:new", (notification: IncomingNotification) => {

@@ -27,7 +27,6 @@ import { MessagesPage } from "./pages/MessagesPage";
 import { MusicPage } from "./pages/MusicPage";
 import { NewsPage } from "./pages/NewsPage";
 import { ProfilePage } from "./pages/ProfilePage";
-import { RegisterPage } from "./pages/RegisterPage";
 import { SavedPostsPage } from "./pages/SavedPostsPage";
 
 const queryClient = new QueryClient({
@@ -100,7 +99,6 @@ export default function App() {
                 <Routes>
                   <Route element={<PlainLayout />}>
                     <Route path="/login" element={<LoginPage />} />
-                    <Route path="/register" element={<RegisterPage />} />
                   </Route>
 
                   <Route element={<ShellLayout />}>
