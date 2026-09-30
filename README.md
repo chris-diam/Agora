@@ -17,7 +17,7 @@ Route → Middleware (auth / validation) → Controller → Service → Prisma �
 - **Routes** — wiring only (path + middleware + controller).
 - **Controllers** — parse `req`, call services, shape the HTTP response. No business logic.
 - **Services** — all business logic and Prisma queries. Plain functions, easy to test and reuse.
-- **Middleware** — JWT auth, Zod validation, centralized error handling.
+- **Middleware** — Keycloak token verification, Zod validation, centralized error handling.
 
 **Design principle — transparent, user-controlled feeds:** there is no engagement-maximizing ranking algorithm. Every feed (`following`, `chronological`, `interests`, `local`) is a plain, deterministically-ordered query, and recommended items can carry a `reason` field (e.g. *"You follow this user"*, *"From your city"*). No ML, no hidden scoring.
 
@@ -71,18 +71,18 @@ cp backend/.env.example backend/.env
 | Variable | Description | Example |
 |---|---|---|
 | `DATABASE_URL` | Postgres connection string | `postgresql://social_platform:social_platform@localhost:5432/social_platform?schema=public` |
-| `JWT_SECRET` | Secret used to sign auth tokens — **use a long random value, never commit it** | generate with `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"` |
-| `JWT_EXPIRES_IN` | Token lifetime | `7d` |
+| `KEYCLOAK_URL` | Base URL of the Keycloak realm this API verifies access tokens against | `http://localhost:8080` (the local docker-compose Keycloak) |
+| `KEYCLOAK_REALM` | Realm name | `kyma` |
+| `KEYCLOAK_CLIENT_ID` | Client id within that realm | `kyma-web` |
 | `PORT` | Backend HTTP port | `4000` |
 | `NODE_ENV` | `development` \| `test` \| `production` | `development` |
-| `GOOGLE_CLIENT_ID` | Optional — enables "Sign in with Google". Unset = the feature returns a clear "not configured" error instead of crashing. | a Google Cloud OAuth Client ID |
 | `CORS_ORIGIN` | Optional — restricts CORS (and the Socket.io handshake) to one origin. Unset = reflects the request origin (fine for local dev). | `https://myapp.pages.dev` |
 
 Env vars are validated at boot (`backend/src/config/env.ts`, via Zod) — the server refuses to start with missing/invalid config instead of failing confusingly later.
 
 The `docker-compose.yml` Postgres credentials (`social_platform` / `social_platform`, db `social_platform`) match the example `DATABASE_URL` above — change both together if you customize them.
 
-The frontend has its own `frontend/.env` (see `frontend/.env.example`): `VITE_GOOGLE_CLIENT_ID` (must match the backend's `GOOGLE_CLIENT_ID`) and `VITE_API_URL` (only needed in production — see `DEPLOYMENT.md`).
+The frontend has its own `frontend/.env` (see `frontend/.env.example`): `VITE_KEYCLOAK_URL`/`VITE_KEYCLOAK_REALM`/`VITE_KEYCLOAK_CLIENT_ID` (must match the backend's `KEYCLOAK_*` values) and `VITE_API_URL` (only needed in production — see `DEPLOYMENT.md`).
 
 ## 4. Installation
 
@@ -90,18 +90,20 @@ The frontend has its own `frontend/.env` (see `frontend/.env.example`): `VITE_GO
 nvm use                 # switches to Node 20 per .nvmrc
 cd backend
 npm install
-cp .env.example .env    # then edit JWT_SECRET, etc.
+cp .env.example .env    # already points at the local docker-compose Keycloak by default
 ```
 
-## 5. Running PostgreSQL
+## 5. Running PostgreSQL and Keycloak
 
 From the project root:
 
 ```bash
-docker compose up -d postgres
+docker compose up -d
 ```
 
-This starts Postgres 16 on `localhost:5432` with a named volume (`postgres_data`) for persistence. Stop it with `docker compose down` (add `-v` to also wipe the data volume).
+This starts Postgres 16 on `localhost:5432` (named volume `postgres_data` for persistence) and a local Keycloak instance on `localhost:8080` (dev mode, realm/client auto-imported from `keycloak/kyma-realm.json` — see that file's own comments, and `DEPLOYMENT.md` for the production Keycloak setup on Render). Stop with `docker compose down` (add `-v` to also wipe the Postgres data volume).
+
+Login/registration for local dev happens on Keycloak's own pages at `http://localhost:8080` — there's no seeded user by default; register a new account there, or create one via the Admin Console (`http://localhost:8080/admin/master/console/`, username/password `admin`/`admin`).
 
 ## 6. Running Migrations
 
@@ -159,7 +161,7 @@ npm run preview        # serve the production build locally
 frontend/src/
 ├── api/          # one thin fetch wrapper per backend domain (auth, posts, events, ...)
 ├── types/        # shared TS types mirroring backend response shapes
-├── context/      # AuthContext — token + current user, login/register/logout
+├── context/      # AuthContext — wraps keycloak-js, current user, login/logout
 ├── hooks/        # TanStack Query hooks per domain (useEvents, useFeed, ...)
 ├── components/   # Navbar, Feed, PostCard, CreatePost, EventList, EventCard, LoginForm, RegisterForm, Pagination, ProtectedRoute
 ├── pages/        # one per route — Login, Register, Home, Feed, Profile, Events, EventDetails, CreateEvent, Communities, CreateCommunity, CreatePost
