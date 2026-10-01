@@ -7,7 +7,7 @@ A concrete, all-free-tier stack for getting this app live on the internet (one p
 | Piece | Service | Why |
 |---|---|---|
 | App database | [Neon](https://neon.tech) ✅ | Serverless Postgres, generous free tier, just a connection string |
-| Identity | [Keycloak](https://www.keycloak.org) on [Render](https://render.com) ✅ | Self-hosted auth — login, registration, and Google sign-in (as a federated identity provider) all happen on Keycloak's own hosted pages, not in this app's own code |
+| Identity | [Keycloak](https://www.keycloak.org) on [Render](https://render.com) ✅ | Self-hosted auth — Keycloak issues and verifies tokens, but login/registration happen on this app's own pages (see below), not Keycloak's hosted ones |
 | Keycloak's database | [Neon](https://neon.tech) ✅ | A second, separate Neon project — keeps Keycloak's schema fully isolated from the app's own data |
 | Backend API | [Render](https://render.com) ✅ | Free Web Service, builds straight from the repo's `Dockerfile` |
 | Frontend | [Cloudflare Workers (static assets)](https://pages.cloudflare.com) ✅ | Free static hosting, connects to the repo, builds on every push |
@@ -27,7 +27,12 @@ Already done for this project (`git remote -v` shows the GitHub origin) — noth
 
 ## 2. Identity — Keycloak on Render
 
-Everything in this app's auth — password login, registration, and "Sign in with Google" — happens on Keycloak's own hosted pages, not in this app's own frontend/backend code. Google is configured *inside* Keycloak as a federated identity provider, not called directly by this app.
+Auth went through two designs before landing here, both worth knowing about since the reasoning shaped what exists today:
+
+1. **Redirect to Keycloak's hosted pages** (Authorization Code + PKCE, the textbook-correct approach) — abandoned after real reliability problems in production: `check-sso`'s cross-origin cookie read got silently blocked by browsers (logged users out on every refresh), and a cold Keycloak instance could hang the whole login flow with zero visible error. A custom Keycloak theme was built to brand those pages (still present — `keycloak/themes/kyma`, still used for any future Keycloak-hosted flow like password reset), but the hosted-redirect approach itself was dropped.
+2. **What's actually in place now**: the browser logs in by calling Keycloak's token endpoint **directly** with a Resource Owner Password Credentials grant (`kyma-web`, a public client with **Direct Access Grants** enabled) — no redirect, no iframe, no SDK (`keycloak-js` was removed entirely; see `frontend/src/lib/authTokens.ts` for the full, small, plain-fetch implementation). Registration has no equivalent self-service grant, so it goes through this app's own backend, which calls Keycloak's Admin API using a scoped **service-account client** (`kyma-backend`, `manage-users` role only — not the realm admin login).
+
+**Trade-off made explicitly**: this drops "Sign in with Google" entirely for now (there's no password to grant for a federated identity under this grant type) and means the backend briefly sees registration passwords in transit to create the account — both accepted knowingly in exchange for a login experience that's fully in this app's own UI and doesn't depend on Keycloak's hosted pages or iframe-based session tricks at all. The Google identity provider is still configured in the realm (harmless, unused) if this gets revisited later.
 
 ### 2a. A second, separate Neon database
 
@@ -62,14 +67,13 @@ Steps:
 
 ### 2c. Configure the realm
 
-The `kyma` realm and `kyma-web` client (Authorization Code + PKCE, no client secret, self-registration enabled) auto-import on first boot from `keycloak/kyma-realm.json` — no manual realm/client setup needed. Two things still need doing by hand, per environment (deliberately not in the committed export — see below):
+The `kyma` realm, the `kyma-web` client (public, Direct Access Grants enabled), and the `kyma-backend` service-account client (confidential, `manage-users` role on `realm-management`) all auto-import on first boot from `keycloak/kyma-realm.json` — correct and already verified end-to-end locally. **This only applies on first import, though**: Keycloak's `--import-realm` uses an `IGNORE_EXISTING` strategy, so once a realm already exists in the target database (any environment that's been deployed before), re-deploying with an updated `kyma-realm.json` does **not** apply the changes — they have to be made by hand, once, via the Admin Console or Admin API, same as any other config drift. This bit us once already (a theme/display-name change silently didn't apply until done manually) — worth remembering before assuming a realm-JSON edit alone is enough on an existing deployment.
 
-1. In the Admin Console (`https://your-keycloak.onrender.com/admin/master/console/`, log in with the `KC_BOOTSTRAP_ADMIN_*` credentials) → switch to the **kyma** realm → **Clients** → `kyma-web` → confirm **Valid redirect URIs** includes your real Cloudflare Workers (static assets) URL (add it if the committed realm export doesn't already list it).
-2. **Identity providers** → **Add provider** → **Google**:
-   - Client ID / Client Secret: from your Google Cloud Console OAuth client (**Credentials**). This is the first point in the whole stack that actually uses the Client Secret — the old direct-Google-Identity-Services flow never needed it.
-   - Note the **Redirect URI** Keycloak shows you (`https://your-keycloak.onrender.com/realms/kyma/broker/google/endpoint`) and add it to that same Google OAuth client's **Authorized redirect URIs** in Google Cloud Console.
+One thing still needs doing by hand regardless, since it's deliberately not in the committed export (a real credential that shouldn't be committed to the repo):
 
-Why these two aren't in `keycloak/kyma-realm.json`: the redirect URI is environment-specific (differs between local dev, this deploy, and any future one), and the Google Client Secret is a real credential that shouldn't be committed to the repo.
+- `kyma-backend`'s client secret — the committed `kyma-realm.json` has a real-looking value in it from local dev; generate and set a **different** one for production via the Admin Console (**Clients** → `kyma-backend` → **Credentials** → **Regenerate**), then set that value as `KEYCLOAK_BACKEND_CLIENT_SECRET` on the backend Render service (step 3).
+
+Also confirm **Clients** → `kyma-web` → **Valid redirect URIs** includes your real Cloudflare Workers (static assets) URL — used by the Keycloak-hosted theme pages (e.g. a future password-reset flow), even though regular login/registration no longer redirects there.
 
 ### Local development
 
@@ -84,6 +88,8 @@ Why these two aren't in `keycloak/kyma-realm.json`: the redirect URI is environm
    - `KEYCLOAK_URL` — the Keycloak service's URL from step 2b, e.g. `https://your-keycloak.onrender.com`
    - `KEYCLOAK_REALM` — `kyma`
    - `KEYCLOAK_CLIENT_ID` — `kyma-web`
+   - `KEYCLOAK_BACKEND_CLIENT_ID` — `kyma-backend`
+   - `KEYCLOAK_BACKEND_CLIENT_SECRET` — the secret you regenerated in step 2c (not the one committed in `kyma-realm.json`, that one's local-dev-only)
    - `NODE_ENV` — `production`
    - `CORS_ORIGIN` — leave blank for now; come back and set it once you have the frontend's URL from step 4
    - `PORT` — Render sets this itself; don't override it

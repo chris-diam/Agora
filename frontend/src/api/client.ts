@@ -1,4 +1,4 @@
-import { keycloak } from "../lib/keycloak";
+import { ensureFreshToken, getAccessToken } from "../lib/authTokens";
 import type { PaginationMeta } from "../types";
 
 // In dev, Vite's proxy forwards a relative "/api" to the local backend (see
@@ -26,10 +26,7 @@ export const resolveMediaUrl = (url: string | null | undefined): string | null =
   return `${SOCKET_URL}${url}`;
 };
 
-// The live Keycloak token, refreshed in place by keycloak-js (in-memory +
-// silent iframe refresh) rather than a hand-rolled localStorage string —
-// there's no separate set/clear here, keycloak-js owns that lifecycle.
-export const getToken = (): string | null => keycloak.token ?? null;
+export const getToken = getAccessToken;
 
 export interface ApiResult<T> {
   data: T;
@@ -58,14 +55,10 @@ export class ApiRequestError extends Error {
 // { success: false, message } response into a throwable error so callers
 // can just `catch` and show err.message.
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<ApiResult<T>> {
-  // Best-effort proactive refresh — keeps a request from firing with a
-  // token that's about to expire. If this fails (or there's no session at
-  // all, e.g. an anonymous GET), fall through with whatever getToken()
-  // currently returns; onTokenExpired (lib/keycloak.ts) is the backstop for
-  // genuinely expired sessions.
-  if (keycloak.authenticated) {
-    await keycloak.updateToken(30).catch(() => {});
-  }
+  // Proactive refresh — a no-op if there's no session or the current token
+  // still has life left (see ensureFreshToken), otherwise refreshes before
+  // this request goes out so it doesn't fire with an expired token.
+  await ensureFreshToken();
 
   const token = getToken();
   const headers = new Headers(options.headers);

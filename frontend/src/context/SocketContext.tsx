@@ -3,7 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
 import type { ReactNode } from "react";
 import { io, type Socket } from "socket.io-client";
 import { SOCKET_URL } from "../api/client";
-import { keycloak } from "../lib/keycloak";
+import { getAccessToken } from "../lib/authTokens";
 import { useAuth } from "./AuthContext";
 import type { PostAuthor } from "../types";
 
@@ -88,15 +88,15 @@ export function SocketProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    if (!keycloak.token) return;
+    if (!getAccessToken()) return;
 
     // `auth` as a function (not a plain object) so it's re-evaluated on
-    // every connection attempt, not just the first — Keycloak's access
-    // tokens are short-lived, and Socket.io only re-runs `auth` on
-    // (re)connect, not per message. A plain `{ token }` snapshot would
-    // strand a long-open tab's socket on the very first automatic
-    // reconnect after the original token expired.
-    const socket = io(SOCKET_URL, { auth: (cb) => cb({ token: keycloak.token }) });
+    // every connection attempt, not just the first — access tokens are
+    // short-lived, and Socket.io only re-runs `auth` on (re)connect, not
+    // per message. A plain `{ token }` snapshot would strand a long-open
+    // tab's socket on the very first automatic reconnect after the
+    // original token expired.
+    const socket = io(SOCKET_URL, { auth: (cb) => cb({ token: getAccessToken() }) });
     socketRef.current = socket;
 
     socket.on("notification:new", (notification: IncomingNotification) => {

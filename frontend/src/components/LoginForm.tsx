@@ -1,0 +1,66 @@
+import { useState } from "react";
+import type { FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+
+export function LoginForm() {
+  const [usernameOrEmail, setUsernameOrEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError(null);
+    setIsSubmitting(true);
+    try {
+      await login(usernameOrEmail, password);
+      navigate("/feed");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Login failed");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+      <div>
+        <label htmlFor="login-username" className="mb-1 block text-sm font-medium text-agora-muted">
+          Username or email
+        </label>
+        <input
+          id="login-username"
+          value={usernameOrEmail}
+          onChange={(event) => setUsernameOrEmail(event.target.value)}
+          required
+          autoFocus
+          className="w-full rounded-xl border border-agora-border bg-agora-surface p-2 text-sm focus:ring-2 focus:ring-agora/30 focus:outline-none"
+        />
+      </div>
+      <div>
+        <label htmlFor="login-password" className="mb-1 block text-sm font-medium text-agora-muted">
+          Password
+        </label>
+        <input
+          id="login-password"
+          type="password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          required
+          className="w-full rounded-xl border border-agora-border bg-agora-surface p-2 text-sm focus:ring-2 focus:ring-agora/30 focus:outline-none"
+        />
+      </div>
+      {error && <p className="text-sm text-red-500">{error}</p>}
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="rounded-full bg-agora px-4 py-2 text-sm font-medium text-agora-on hover:bg-agora-hover disabled:opacity-50"
+      >
+        {isSubmitting ? "Logging in..." : "Login"}
+      </button>
+    </form>
+  );
+}

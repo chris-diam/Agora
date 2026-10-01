@@ -7,3 +7,8 @@ export const me = asyncHandler(async (req: Request, res: Response) => {
   const profile = await authService.getCurrentUser(req.user!.id);
   return sendSuccess(res, profile);
 });
+
+export const register = asyncHandler(async (req: Request, res: Response) => {
+  await authService.registerUser(req.body);
+  return sendSuccess(res, null, 201);
+});

@@ -13,6 +13,12 @@ const envSchema = z.object({
   KEYCLOAK_URL: z.string().min(1, "KEYCLOAK_URL is required"),
   KEYCLOAK_REALM: z.string().min(1, "KEYCLOAK_REALM is required"),
   KEYCLOAK_CLIENT_ID: z.string().min(1, "KEYCLOAK_CLIENT_ID is required"),
+  // Optional — a confidential service-account client (NOT the realm admin
+  // account) scoped to just creating users, used by POST /api/auth/register
+  // to call Keycloak's Admin API server-side. Unset = registration returns
+  // a clear "not configured" error instead of crashing the whole server.
+  KEYCLOAK_BACKEND_CLIENT_ID: z.string().optional(),
+  KEYCLOAK_BACKEND_CLIENT_SECRET: z.string().optional(),
   // Unset in dev (reflects the request origin). Set to the deployed
   // frontend's exact origin in production, e.g. https://myapp.pages.dev
   CORS_ORIGIN: z.string().optional(),

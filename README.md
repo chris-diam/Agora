@@ -74,6 +74,8 @@ cp backend/.env.example backend/.env
 | `KEYCLOAK_URL` | Base URL of the Keycloak realm this API verifies access tokens against | `http://localhost:8080` (the local docker-compose Keycloak) |
 | `KEYCLOAK_REALM` | Realm name | `kyma` |
 | `KEYCLOAK_CLIENT_ID` | Client id within that realm | `kyma-web` |
+| `KEYCLOAK_BACKEND_CLIENT_ID` | Optional — a confidential service-account client used by `POST /api/auth/register` to create users via Keycloak's Admin API. Unset = registration returns a clear error. | `kyma-backend` |
+| `KEYCLOAK_BACKEND_CLIENT_SECRET` | That client's secret | see `keycloak/kyma-realm.json` for local dev |
 | `PORT` | Backend HTTP port | `4000` |
 | `NODE_ENV` | `development` \| `test` \| `production` | `development` |
 | `CORS_ORIGIN` | Optional — restricts CORS (and the Socket.io handshake) to one origin. Unset = reflects the request origin (fine for local dev). | `https://myapp.pages.dev` |
@@ -103,7 +105,7 @@ docker compose up -d
 
 This starts Postgres 16 on `localhost:5432` (named volume `postgres_data` for persistence) and a local Keycloak instance on `localhost:8080` (dev mode, realm/client auto-imported from `keycloak/kyma-realm.json` — see that file's own comments, and `DEPLOYMENT.md` for the production Keycloak setup on Render). Stop with `docker compose down` (add `-v` to also wipe the Postgres data volume).
 
-Login/registration for local dev happens on Keycloak's own pages at `http://localhost:8080` — there's no seeded user by default; register a new account there, or create one via the Admin Console (`http://localhost:8080/admin/master/console/`, username/password `admin`/`admin`).
+Login and registration happen on this app's own `/login`/`/register` pages (not Keycloak's hosted ones — see `DEPLOYMENT.md`'s "Identity" section for why) — just register a new account there. The Keycloak Admin Console itself (`http://localhost:8080/admin/master/console/`, username/password `admin`/`admin`) is only needed for inspecting/managing the realm directly.
 
 ## 6. Running Migrations
 
@@ -161,7 +163,7 @@ npm run preview        # serve the production build locally
 frontend/src/
 ├── api/          # one thin fetch wrapper per backend domain (auth, posts, events, ...)
 ├── types/        # shared TS types mirroring backend response shapes
-├── context/      # AuthContext — wraps keycloak-js, current user, login/logout
+├── context/      # AuthContext — wraps lib/authTokens.ts, current user, login/logout
 ├── hooks/        # TanStack Query hooks per domain (useEvents, useFeed, ...)
 ├── components/   # Navbar, Feed, PostCard, CreatePost, EventList, EventCard, LoginForm, RegisterForm, Pagination, ProtectedRoute
 ├── pages/        # one per route — Login, Register, Home, Feed, Profile, Events, EventDetails, CreateEvent, Communities, CreateCommunity, CreatePost
