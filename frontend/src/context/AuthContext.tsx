@@ -22,13 +22,32 @@ let keycloakInitPromise: Promise<boolean> | null = null;
 // init() call against the same instance. Memoizing the promise itself
 // (not just guarding with a ref) also means a StrictMode remount gets the
 // same in-flight/resolved result instead of racing a fresh init.
+//
+// checkLoginIframe (default true) adds periodic cross-tab "logged out
+// elsewhere" polling this app doesn't need, so it's turned off — but note
+// it does NOT stop keycloak-js's own one-time 3p-cookies capability check
+// that check-sso itself runs (confirmed by watching network requests with
+// it both on and off). That check hits Keycloak directly, and on a cold
+// Render free-tier instance it can come back 503 (or just be slow while
+// the instance wakes up) in a way keycloak-js doesn't resolve cleanly from
+// — init() just never settles, silently stalling the entire login flow
+// with no visible error. The real protection against that is the timeout
+// race below, not this flag.
 function initKeycloakOnce(): Promise<boolean> {
   if (!keycloakInitPromise) {
-    keycloakInitPromise = keycloak.init({
+    const init = keycloak.init({
       onLoad: "check-sso",
       pkceMethod: "S256",
       silentCheckSsoRedirectUri: `${window.location.origin}/silent-check-sso.html`,
+      checkLoginIframe: false,
     });
+    // If init() hasn't settled within a few seconds (cold Keycloak, per
+    // above), fall back to "not authenticated" so the UI unblocks and the
+    // user can click Log in — a full top-level navigation, far more
+    // resilient than an iframe, that just shows Keycloak's own slow
+    // cold-start page directly if it's still waking up.
+    const timeout = new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 8000));
+    keycloakInitPromise = Promise.race([init, timeout]);
   }
   return keycloakInitPromise;
 }
