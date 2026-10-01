@@ -15,6 +15,59 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+// Restoring a session on refresh via check-sso (a hidden iframe reading
+// Keycloak's session cookie) turned out to be unreliable in practice —
+// Keycloak and this app are different origins, so that cookie read is a
+// third-party-cookie access, and browsers increasingly restrict those (this
+// is what the "iframe... can escape its sandboxing" console warning and the
+// "works, but logs out on every refresh" reports traced back to). A plain
+// token-refresh POST carries the refresh token in the request body, not a
+// cookie, so it isn't subject to that restriction at all — storing the
+// tokens ourselves and handing them back to keycloak.init() on the next
+// load sidesteps the cross-origin cookie problem entirely. sessionStorage
+// (not localStorage) so it's at least scoped to the tab/window and cleared
+// when that closes, same exposure class the previous JWT-in-localStorage
+// system already had.
+const STORAGE_KEY = "kc_tokens";
+
+interface StoredTokens {
+  token: string;
+  refreshToken: string;
+  idToken: string;
+}
+
+const loadStoredTokens = (): StoredTokens | null => {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as StoredTokens) : null;
+  } catch {
+    return null;
+  }
+};
+
+const persistTokens = () => {
+  if (!keycloak.token || !keycloak.refreshToken) return;
+  try {
+    const tokens: StoredTokens = {
+      token: keycloak.token,
+      refreshToken: keycloak.refreshToken,
+      idToken: keycloak.idToken ?? "",
+    };
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(tokens));
+  } catch {
+    // Storage unavailable (private mode, quota, etc.) — session just won't
+    // survive a refresh; not worth failing the request over.
+  }
+};
+
+const clearStoredTokens = () => {
+  try {
+    sessionStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // ignore
+  }
+};
+
 let keycloakInitPromise: Promise<boolean> | null = null;
 
 // `keycloak.init()` must run exactly once per page load — React 18 Strict
@@ -22,32 +75,29 @@ let keycloakInitPromise: Promise<boolean> | null = null;
 // init() call against the same instance. Memoizing the promise itself
 // (not just guarding with a ref) also means a StrictMode remount gets the
 // same in-flight/resolved result instead of racing a fresh init.
-//
-// checkLoginIframe (default true) adds periodic cross-tab "logged out
-// elsewhere" polling this app doesn't need, so it's turned off — but note
-// it does NOT stop keycloak-js's own one-time 3p-cookies capability check
-// that check-sso itself runs (confirmed by watching network requests with
-// it both on and off). That check hits Keycloak directly, and on a cold
-// Render free-tier instance it can come back 503 (or just be slow while
-// the instance wakes up) in a way keycloak-js doesn't resolve cleanly from
-// — init() just never settles, silently stalling the entire login flow
-// with no visible error. The real protection against that is the timeout
-// race below, not this flag.
 function initKeycloakOnce(): Promise<boolean> {
   if (!keycloakInitPromise) {
-    const init = keycloak.init({
-      onLoad: "check-sso",
-      pkceMethod: "S256",
-      silentCheckSsoRedirectUri: `${window.location.origin}/silent-check-sso.html`,
-      checkLoginIframe: false,
-    });
-    // If init() hasn't settled within a few seconds (cold Keycloak, per
-    // above), fall back to "not authenticated" so the UI unblocks and the
-    // user can click Log in — a full top-level navigation, far more
-    // resilient than an iframe, that just shows Keycloak's own slow
-    // cold-start page directly if it's still waking up.
+    const stored = loadStoredTokens();
+    const init = stored
+      ? keycloak.init({ ...stored, pkceMethod: "S256", checkLoginIframe: false })
+      : keycloak.init({
+          onLoad: "check-sso",
+          pkceMethod: "S256",
+          silentCheckSsoRedirectUri: `${window.location.origin}/silent-check-sso.html`,
+          checkLoginIframe: false,
+        });
+    // If init() hasn't settled within a few seconds (cold Keycloak — a
+    // stock check-sso attempt can stall on Keycloak's own capability-check
+    // request against a cold Render free-tier instance), fall back to "not
+    // authenticated" so the UI unblocks and the user can click Log in — a
+    // full top-level navigation, far more resilient than an iframe, that
+    // just shows Keycloak's own slow cold-start page directly if needed.
     const timeout = new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 8000));
-    keycloakInitPromise = Promise.race([init, timeout]);
+    keycloakInitPromise = Promise.race([init, timeout]).then((authenticated) => {
+      if (authenticated) persistTokens();
+      else clearStoredTokens();
+      return authenticated;
+    });
   }
   return keycloakInitPromise;
 }
@@ -63,16 +113,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsAuthenticated(authenticated);
         setReady(true);
       })
-      .catch(() => setReady(true));
+      .catch(() => {
+        clearStoredTokens();
+        setReady(true);
+      });
+
+    // Re-persist on every refresh — refresh tokens can rotate, so the
+    // stored copy has to stay current or a later reload would hand
+    // keycloak.init() a refresh token Keycloak no longer recognizes.
+    keycloak.onAuthSuccess = persistTokens;
+    keycloak.onAuthRefreshSuccess = persistTokens;
 
     // The refresh token itself expiring/being revoked (not just the short
     // access token) means the session is genuinely over — reflect that in
     // state rather than leaving the app thinking it's still logged in.
     keycloak.onAuthRefreshError = () => {
+      clearStoredTokens();
       setIsAuthenticated(false);
       queryClient.clear();
     };
     keycloak.onAuthLogout = () => {
+      clearStoredTokens();
       setIsAuthenticated(false);
       queryClient.clear();
     };
@@ -99,6 +160,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = () => keycloak.login();
 
   const logout = () => {
+    clearStoredTokens();
     queryClient.clear();
     keycloak.logout({ redirectUri: window.location.origin });
   };
