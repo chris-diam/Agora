@@ -23,9 +23,64 @@
 }
 
 body#keycloak-bg {
-  background: linear-gradient(135deg, var(--kyma-bg) 0%, #01161e 60%, var(--kyma-bg) 100%) !important;
+  background: var(--kyma-bg) !important;
   min-height: 100vh;
   font-family: "Wellfleet", serif;
+  margin: 0;
+}
+
+/* Two-panel split matching KYMA's own pre-Keycloak /login page: a hero
+   image on the left, the actual (Keycloak-rendered) form on the right.
+   Structural change lives in template.ftl; this is just the layout CSS —
+   everything inside .kyma-form-panel is still Keycloak's own markup,
+   unmodified. */
+.kyma-split {
+  display: flex;
+  min-height: 100vh;
+}
+
+.kyma-hero-panel {
+  display: none;
+}
+
+.kyma-form-panel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  background: linear-gradient(135deg, var(--kyma-bg) 0%, #01161e 60%, var(--kyma-bg) 100%);
+}
+
+@media (min-width: 1024px) {
+  .kyma-hero-panel {
+    display: block;
+    flex: 1 1 50%;
+    max-width: 50%;
+    overflow: hidden;
+  }
+
+  .kyma-hero-panel img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .kyma-form-panel {
+    flex: 1 1 50%;
+    max-width: 50%;
+  }
+}
+
+.kyma-form-panel .pf-v5-c-login {
+  width: 100%;
+  padding: 0;
+}
+
+.kyma-form-panel .pf-v5-c-login__container {
+  grid-template-columns: minmax(0, 28rem);
+  max-width: 28rem;
 }
 
 .pf-v5-c-login {
