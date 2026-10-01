@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { resolveMediaUrl } from "../api/client";
 
 interface AvatarProps {
@@ -18,8 +18,13 @@ export function Avatar({ name, imageUrl, size = "md" }: AvatarProps) {
   const resolvedUrl = resolveMediaUrl(imageUrl);
   // If the image 404s/errors (a dead URL, a rate-limited external host,
   // whatever) fall back to the initial-letter avatar instead of the
-  // browser's broken-image icon.
+  // browser's broken-image icon. Reset whenever the URL itself changes —
+  // without this, a persistent instance (e.g. the navbar's avatar, which
+  // never unmounts across the session) that ever failed once would stay
+  // stuck showing the initial letter forever, even after a successful
+  // re-upload swapped in a perfectly good new URL.
   const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [resolvedUrl]);
 
   if (resolvedUrl && !failed) {
     return (

@@ -11,7 +11,7 @@ interface NavbarProps {
 }
 
 export function Navbar({ onMenuClick }: NavbarProps) {
-  const { user, isAuthenticated, login, logout } = useAuth();
+  const { user, isAuthenticated, isLoading, login, logout } = useAuth();
 
   return (
     <header className="sticky top-0 z-20 border-b border-agora-border bg-agora-surface/70 backdrop-blur-xl">
@@ -56,6 +56,13 @@ export function Navbar({ onMenuClick }: NavbarProps) {
                 Logout
               </button>
             </>
+          ) : isLoading ? (
+            // Auth status hasn't resolved yet (restoring a session from a
+            // refresh, most likely) — render a same-sized placeholder
+            // instead of "Log in", which would otherwise flash briefly for
+            // an already-logged-in user before flipping to the real
+            // authenticated view a moment later.
+            <div className="h-9 w-9 shrink-0 animate-pulse rounded-full bg-agora-light" aria-hidden="true" />
           ) : (
             <button
               type="button"
