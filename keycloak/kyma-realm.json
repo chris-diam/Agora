@@ -1,6 +1,8 @@
 {
   "id": "30b51f57-0b27-4c2e-a3ba-c1069064470e",
   "realm": "kyma",
+  "displayName": "KYMA",
+  "loginTheme": "kyma",
   "notBefore": 0,
   "defaultSignatureAlgorithm": "RS256",
   "revokeRefreshToken": false,

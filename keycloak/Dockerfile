@@ -4,6 +4,9 @@
 # enough that Render's port-scan gave up and killed the container before
 # Keycloak ever finished starting. `start --optimized` skips it entirely.
 FROM quay.io/keycloak/keycloak:26.0 AS builder
+# Present before `kc.sh build` so it's part of the same optimized build
+# Keycloak caches, rather than a loose runtime-only file.
+COPY themes/kyma /opt/keycloak/themes/kyma
 RUN /opt/keycloak/bin/kc.sh build --db=postgres
 
 FROM quay.io/keycloak/keycloak:26.0

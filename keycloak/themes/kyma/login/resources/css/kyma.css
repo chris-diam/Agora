@@ -1,0 +1,133 @@
+/* KYMA branding for Keycloak's hosted login/registration pages.
+   Matches the app's "Midnight" theme (frontend/src/index.css) — a single
+   fixed palette rather than the app's full multi-theme system, since
+   Keycloak has no knowledge of a visitor's in-app theme preference
+   (especially true for anyone who's never logged in before).
+   Strategy: override the PatternFly design-token custom properties the
+   default theme actually reads color/background from (scoped under
+   .pf-v5-c-login so it doesn't leak into unrelated pages), backed by a
+   handful of !important direct overrides on the few elements where the
+   token chain is deep/uncertain — belt and suspenders, verified visually
+   rather than by only tracing every token by hand. */
+
+@import url("https://fonts.googleapis.com/css2?family=Wellfleet&display=swap");
+
+:root {
+  --kyma-bg: #02222e;
+  --kyma-surface: #0d252f;
+  --kyma-border: #2e2e32;
+  --kyma-accent: #53a1c9;
+  --kyma-accent-hover: #72b2d3;
+  --kyma-text: #dd5d42;
+  --kyma-muted: #a9b7bd;
+}
+
+body#keycloak-bg {
+  background: linear-gradient(135deg, var(--kyma-bg) 0%, #01161e 60%, var(--kyma-bg) 100%) !important;
+  min-height: 100vh;
+  font-family: "Wellfleet", serif;
+}
+
+.pf-v5-c-login {
+  --pf-v5-c-login__main--BackgroundColor: var(--kyma-surface);
+  --pf-v5-global--Color--100: #f3f6f7;
+  --pf-v5-global--Color--200: var(--kyma-muted);
+  --pf-v5-global--BorderColor--100: var(--kyma-border);
+  --pf-v5-global--primary-color--100: var(--kyma-accent);
+  --pf-v5-global--link--Color: var(--kyma-accent);
+  --pf-v5-global--link--Color--hover: var(--kyma-accent-hover);
+  --pf-v5-c-form-control--Color: #f3f6f7;
+  --pf-v5-c-form-control--BackgroundColor: var(--kyma-bg);
+  --pf-v5-c-form-control--after--BorderBottomColor: var(--kyma-border);
+  --pf-v5-c-button--m-primary--BackgroundColor: var(--kyma-accent);
+  --pf-v5-c-button--m-primary--Color: #ffffff;
+  --pf-v5-c-button--m-primary--hover--BackgroundColor: var(--kyma-accent-hover);
+  --pf-v5-c-button--m-primary--hover--Color: #ffffff;
+  --pf-v5-c-title--Color: #f3f6f7;
+}
+
+/* Realm display name in the header ("kyma") — the one thing in this page
+   that's genuinely our wordmark rather than a Keycloak-generated label. */
+#kc-header-wrapper {
+  font-family: "Wellfleet", serif;
+  color: var(--kyma-text) !important;
+  font-weight: 700;
+  letter-spacing: 4px;
+}
+
+.pf-v5-c-login__main {
+  background-color: var(--kyma-surface) !important;
+  border: 1px solid var(--kyma-border);
+  border-radius: 1.5rem !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+}
+
+#kc-page-title {
+  color: #f3f6f7 !important;
+}
+
+.pf-v5-c-form__label-text {
+  color: var(--kyma-muted) !important;
+}
+
+.pf-v5-c-form-control,
+.pf-v5-c-form-control > input,
+.pf-v5-c-form-control > select,
+.pf-v5-c-form-control > textarea {
+  background-color: var(--kyma-bg) !important;
+  color: #f3f6f7 !important;
+}
+
+.pf-v5-c-form-control {
+  border: 1px solid var(--kyma-border) !important;
+  border-radius: 0.75rem !important;
+}
+
+.pf-v5-c-form-control:focus-within {
+  outline: 2px solid color-mix(in srgb, var(--kyma-accent) 40%, transparent);
+  outline-offset: 1px;
+}
+
+.pf-v5-c-button.pf-m-control {
+  background-color: var(--kyma-bg) !important;
+  color: var(--kyma-muted) !important;
+  border: 1px solid var(--kyma-border) !important;
+}
+
+#kc-login,
+.pf-v5-c-button.pf-m-primary {
+  background-color: var(--kyma-accent) !important;
+  color: #ffffff !important;
+  border-radius: 9999px !important;
+  border: none !important;
+}
+
+#kc-login:hover,
+.pf-v5-c-button.pf-m-primary:hover {
+  background-color: var(--kyma-accent-hover) !important;
+}
+
+a,
+.pf-v5-c-form__helper-text a {
+  color: var(--kyma-accent) !important;
+}
+
+.subtitle,
+.pf-v5-c-helper-text__item-text {
+  color: var(--kyma-muted) !important;
+}
+
+#kc-registration-container,
+#kc-registration,
+.pf-v5-c-login__main-footer-band-item,
+.pf-v5-c-login__main-footer-band-item span {
+  color: var(--kyma-muted) !important;
+}
+
+/* "Or sign in with" divider + the Google button Keycloak renders for the
+   realm's identity provider. */
+.pf-v5-c-login__main-footer-links-item-link {
+  background-color: var(--kyma-bg) !important;
+  border: 1px solid var(--kyma-border) !important;
+  border-radius: 9999px !important;
+}
