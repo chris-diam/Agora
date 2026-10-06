@@ -5,6 +5,7 @@ import { buildPaginationMeta, PaginationParams } from "../utils/pagination";
 import { CreatePostInput, UpdatePostInput } from "../validators/posts.validators";
 import { assertCommunityMember } from "./communities.service";
 import { deleteMediaAssetByUrl } from "./media.service";
+import { createLikeNotification } from "./notifications.service";
 
 const authorSelect = {
   id: true,
@@ -183,7 +184,7 @@ export const deletePost = async (postId: string, userId: string) => {
 };
 
 export const likePost = async (postId: string, userId: string) => {
-  const post = await prisma.post.findUnique({ where: { id: postId }, select: { id: true } });
+  const post = await prisma.post.findUnique({ where: { id: postId }, select: { id: true, authorId: true } });
   if (!post) throw new AppError("Post not found", 404);
 
   const existing = await prisma.like.findUnique({
@@ -192,6 +193,7 @@ export const likePost = async (postId: string, userId: string) => {
   if (existing) throw new AppError("You already liked this post", 409);
 
   await prisma.like.create({ data: { postId, userId } });
+  await createLikeNotification(post.authorId, userId, postId);
 };
 
 export const unlikePost = async (postId: string, userId: string) => {

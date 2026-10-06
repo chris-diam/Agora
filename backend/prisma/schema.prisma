@@ -169,10 +169,11 @@ model Post {
   communityId String?
   community   Community? @relation(fields: [communityId], references: [id], onDelete: SetNull)
 
-  author   User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  likes    Like[]
-  comments Comment[]
-  savedBy  SavedPost[]
+  author        User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  likes         Like[]
+  comments      Comment[]
+  savedBy       SavedPost[]
+  notifications Notification[] @relation("NotificationPost")
 
   @@index([authorId])
   @@index([category])
@@ -360,18 +361,25 @@ model Profile {
 
 enum NotificationType {
   FOLLOW
+  LIKE
+  COMMENT
 }
 
 model Notification {
   id        String           @id @default(cuid())
   userId    String // recipient
   type      NotificationType
-  actorId   String // who triggered it (e.g. the new follower)
+  actorId   String // who triggered it (e.g. the new follower, or who liked/commented)
+  // Set for LIKE/COMMENT (which post triggered it); null for FOLLOW. The
+  // post can be deleted independently of the notification feed, so this
+  // cascades rather than leaving a dangling reference.
+  postId    String?
   isRead    Boolean          @default(false)
   createdAt DateTime         @default(now())
 
-  user  User @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
-  actor User @relation("NotificationActor", fields: [actorId], references: [id], onDelete: Cascade)
+  user  User  @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  actor User  @relation("NotificationActor", fields: [actorId], references: [id], onDelete: Cascade)
+  post  Post? @relation("NotificationPost", fields: [postId], references: [id], onDelete: Cascade)
 
   @@index([userId, isRead])
   @@index([userId, createdAt])

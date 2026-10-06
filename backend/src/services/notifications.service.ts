@@ -31,6 +31,30 @@ export const createFollowNotification = async (recipientId: string, actorId: str
   emitToUser(recipientId, "notification:new", { ...notification, followingBack: Boolean(reciprocal) });
 };
 
+const createPostNotification = async (
+  type: "LIKE" | "COMMENT",
+  recipientId: string,
+  actorId: string,
+  postId: string,
+) => {
+  // Same self-action guard as follow — liking/commenting on your own post
+  // shouldn't notify yourself.
+  if (recipientId === actorId) return;
+
+  const notification = await prisma.notification.create({
+    data: { userId: recipientId, actorId, type, postId },
+    include: { actor: { select: actorSelect } },
+  });
+
+  emitToUser(recipientId, "notification:new", notification);
+};
+
+export const createLikeNotification = (recipientId: string, actorId: string, postId: string) =>
+  createPostNotification("LIKE", recipientId, actorId, postId);
+
+export const createCommentNotification = (recipientId: string, actorId: string, postId: string) =>
+  createPostNotification("COMMENT", recipientId, actorId, postId);
+
 export const listNotifications = async (userId: string, { page, limit, skip }: PaginationParams) => {
   const [rows, totalItems] = await Promise.all([
     prisma.notification.findMany({

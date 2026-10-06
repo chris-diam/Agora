@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { AppError } from "../utils/AppError";
 import { buildPaginationMeta, PaginationParams } from "../utils/pagination";
+import { createCommentNotification } from "./notifications.service";
 import { CreateCommentInput } from "../validators/comments.validators";
 
 const authorSelect = {
@@ -30,13 +31,17 @@ export const getCommentsForPost = async (postId: string, { page, limit, skip }: 
 };
 
 export const createComment = async (postId: string, authorId: string, input: CreateCommentInput) => {
-  const post = await prisma.post.findUnique({ where: { id: postId }, select: { id: true } });
+  const post = await prisma.post.findUnique({ where: { id: postId }, select: { id: true, authorId: true } });
   if (!post) throw new AppError("Post not found", 404);
 
-  return prisma.comment.create({
+  const comment = await prisma.comment.create({
     data: { postId, authorId, content: input.content },
     include: { author: { select: authorSelect } },
   });
+
+  await createCommentNotification(post.authorId, authorId, postId);
+
+  return comment;
 };
 
 export const deleteComment = async (commentId: string, userId: string) => {

@@ -34,6 +34,7 @@ Full architecture/database/API rationale lives in the project planning discussio
 ```
 social-network/
 ├── frontend/          # React + TypeScript + Vite (Phase 8)
+├── mobile/            # Expo/React Native — foundation app, see mobile/README.md
 ├── backend/           # Node + TypeScript + Express + Prisma
 │   ├── prisma/
 │   │   ├── schema.prisma

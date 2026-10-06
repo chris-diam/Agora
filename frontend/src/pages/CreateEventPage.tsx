@@ -1,8 +1,9 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCreateEvent } from "../hooks/useEvents";
 import { useCommunity } from "../hooks/useCommunities";
+import { useAuth } from "../context/AuthContext";
 import { CameraIcon, CloseIcon } from "../components/icons";
 import type { EventCategory } from "../types";
 
@@ -22,9 +23,39 @@ const fieldClasses =
   "w-full rounded-xl border border-agora-border bg-agora-surface p-2.5 text-sm text-agora-text focus:ring-2 focus:ring-agora/30 focus:outline-none";
 const labelClasses = "flex flex-col gap-1 text-xs font-medium text-agora-muted";
 
+interface DetectedLocation {
+  city: string;
+  country: string;
+  latitude?: number;
+  longitude?: number;
+}
+
+// Reverse-geocodes browser coordinates via Nominatim (OpenStreetMap's free,
+// keyless geocoder) — no API key/billing setup needed, unlike Google's
+// Geocoding API. Best-effort: any failure just leaves location undetected
+// and the profile-city fallback below takes over.
+const reverseGeocode = async (latitude: number, longitude: number): Promise<DetectedLocation | null> => {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`,
+      { headers: { Accept: "application/json" } },
+    );
+    if (!res.ok) return null;
+    const body = await res.json();
+    const address = body.address ?? {};
+    const city = address.city ?? address.town ?? address.village ?? address.municipality ?? address.county;
+    const country = address.country;
+    if (!city || !country) return null;
+    return { city, country, latitude, longitude };
+  } catch {
+    return null;
+  }
+};
+
 export function CreateEventPage() {
   const navigate = useNavigate();
   const createEvent = useCreateEvent();
+  const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [searchParams] = useSearchParams();
   const communityId = searchParams.get("communityId") ?? undefined;
@@ -34,22 +65,58 @@ export function CreateEventPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState<EventCategory>("MUSIC");
-  const [city, setCity] = useState("");
-  const [country, setCountry] = useState("");
-  const [venueName, setVenueName] = useState("");
-  const [address, setAddress] = useState("");
-  const [showLocationDetails, setShowLocationDetails] = useState(false);
 
-  // Plain date + time inputs instead of a single datetime-local: browsers'
-  // combined datetime-local widget is notoriously fussy to fill via keyboard
-  // (locale-dependent segment order, easy to leave a segment blank) and,
-  // being `required`, fails HTML5 validation completely silently — the form
-  // just never submits, with no error shown anywhere. Two simple inputs are
-  // far more reliable to fill correctly.
-  const [startDateStr, setStartDateStr] = useState("");
-  const [startTimeStr, setStartTimeStr] = useState("");
-  const [endDateStr, setEndDateStr] = useState("");
-  const [endTimeStr, setEndTimeStr] = useState("");
+  // Location is detected automatically rather than typed in — most events
+  // are organized from wherever they'll happen, and asking for city/country/
+  // venue/address manually was the single biggest source of create-event
+  // friction. Falls back to the organizer's profile city/country (set in
+  // their Profile page) if geolocation is denied or unavailable, so the
+  // form still works without ever blocking on it.
+  const [location, setLocation] = useState<DetectedLocation | null>(null);
+  const [locationStatus, setLocationStatus] = useState<"detecting" | "detected" | "fallback" | "unavailable">(
+    "detecting",
+  );
+
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setLocationStatus(user?.city && user?.country ? "fallback" : "unavailable");
+      if (user?.city && user?.country) setLocation({ city: user.city, country: user.country });
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const detected = await reverseGeocode(position.coords.latitude, position.coords.longitude);
+        if (detected) {
+          setLocation(detected);
+          setLocationStatus("detected");
+        } else if (user?.city && user?.country) {
+          setLocation({ city: user.city, country: user.country });
+          setLocationStatus("fallback");
+        } else {
+          setLocationStatus("unavailable");
+        }
+      },
+      () => {
+        if (user?.city && user?.country) {
+          setLocation({ city: user.city, country: user.country });
+          setLocationStatus("fallback");
+        } else {
+          setLocationStatus("unavailable");
+        }
+      },
+      { timeout: 8000 },
+    );
+    // Runs once on mount — re-detecting on every user-object refetch would
+    // re-trigger a geolocation prompt/request unnecessarily.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // A single combined date+time input instead of the old separate start/end
+  // date and time fields — fewer fields to fill, and events in this app
+  // don't otherwise use an end time anywhere (event cards/details only ever
+  // show the start).
+  const [startAt, setStartAt] = useState("");
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
@@ -74,39 +141,23 @@ export function CreateEventPage() {
     event.preventDefault();
     setError(null);
 
-    // Explicit validation with a message the user actually sees, rather
-    // than relying solely on native HTML5 validation (which can block
-    // submission with zero visible feedback).
-    if (!title.trim() || !description.trim() || !city.trim() || !country.trim()) {
-      setError("Please fill in the title, description, city, and country.");
+    if (!title.trim() || !description.trim()) {
+      setError("Please fill in the title and description.");
       return;
     }
-    if (!startDateStr || !startTimeStr) {
-      setError("Please pick a start date and time.");
+    if (!location) {
+      setError("We couldn't detect your location. Set a city and country on your profile and try again.");
+      return;
+    }
+    if (!startAt) {
+      setError("Please pick a date and time.");
       return;
     }
 
-    const startDate = new Date(`${startDateStr}T${startTimeStr}`);
+    const startDate = new Date(startAt);
     if (Number.isNaN(startDate.getTime())) {
-      setError("The start date/time doesn't look valid.");
+      setError("The date/time doesn't look valid.");
       return;
-    }
-
-    let endDate: Date | undefined;
-    if (endDateStr || endTimeStr) {
-      if (!endDateStr || !endTimeStr) {
-        setError("Please fill in both the end date and end time, or leave both empty.");
-        return;
-      }
-      endDate = new Date(`${endDateStr}T${endTimeStr}`);
-      if (Number.isNaN(endDate.getTime())) {
-        setError("The end date/time doesn't look valid.");
-        return;
-      }
-      if (endDate < startDate) {
-        setError("The end time can't be before the start time.");
-        return;
-      }
     }
 
     try {
@@ -114,12 +165,11 @@ export function CreateEventPage() {
         title: title.trim(),
         description: description.trim(),
         category,
-        city: city.trim(),
-        country: country.trim(),
-        venueName: venueName.trim() || undefined,
-        address: address.trim() || undefined,
+        city: location.city,
+        country: location.country,
+        latitude: location.latitude,
+        longitude: location.longitude,
         startDate: startDate.toISOString(),
-        endDate: endDate?.toISOString(),
         imageFile: imageFile ?? undefined,
         communityId,
       });
@@ -192,83 +242,24 @@ export function CreateEventPage() {
         )}
         <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
 
-        <div className="grid grid-cols-2 gap-3">
-          <input
-            value={city}
-            onChange={(event) => setCity(event.target.value)}
-            placeholder="City"
-            className={fieldClasses}
-          />
-          <input
-            value={country}
-            onChange={(event) => setCountry(event.target.value)}
-            placeholder="Country"
-            className={fieldClasses}
-          />
+        <div className="flex flex-col gap-1 text-xs text-agora-muted">
+          <span className="font-medium">Location</span>
+          {locationStatus === "detecting" && "Detecting your location…"}
+          {locationStatus === "detected" && location && `${location.city}, ${location.country} (detected)`}
+          {locationStatus === "fallback" && location && `${location.city}, ${location.country} (from your profile)`}
+          {locationStatus === "unavailable" &&
+            "Couldn't detect your location. Add a city/country on your profile to create events."}
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <label className={labelClasses}>
-            Start date
-            <input
-              type="date"
-              value={startDateStr}
-              onChange={(event) => setStartDateStr(event.target.value)}
-              className={fieldClasses}
-            />
-          </label>
-          <label className={labelClasses}>
-            Start time
-            <input
-              type="time"
-              value={startTimeStr}
-              onChange={(event) => setStartTimeStr(event.target.value)}
-              className={fieldClasses}
-            />
-          </label>
-          <label className={labelClasses}>
-            End date (optional)
-            <input
-              type="date"
-              value={endDateStr}
-              onChange={(event) => setEndDateStr(event.target.value)}
-              className={fieldClasses}
-            />
-          </label>
-          <label className={labelClasses}>
-            End time (optional)
-            <input
-              type="time"
-              value={endTimeStr}
-              onChange={(event) => setEndTimeStr(event.target.value)}
-              className={fieldClasses}
-            />
-          </label>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setShowLocationDetails((value) => !value)}
-          className="self-start text-xs font-medium text-agora hover:underline"
-        >
-          {showLocationDetails ? "Hide venue details" : "+ Add venue details (optional)"}
-        </button>
-        {showLocationDetails && (
-          <div className="grid grid-cols-2 gap-3">
-            <input
-              value={venueName}
-              onChange={(event) => setVenueName(event.target.value)}
-              placeholder="Venue name"
-              className={fieldClasses}
-            />
-            <input
-              value={address}
-              onChange={(event) => setAddress(event.target.value)}
-              placeholder="Street address"
-              className={fieldClasses}
-            />
-          </div>
-        )}
+        <label className={labelClasses}>
+          Date & time
+          <input
+            type="datetime-local"
+            value={startAt}
+            onChange={(event) => setStartAt(event.target.value)}
+            className={fieldClasses}
+          />
+        </label>
 
         {error && <p className="text-sm text-red-500">{error}</p>}
         <button

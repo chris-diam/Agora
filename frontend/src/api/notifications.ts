@@ -1,7 +1,7 @@
 import { apiFetch, buildQuery } from "./client";
 import type { PostAuthor } from "../types";
 
-export type NotificationType = "FOLLOW";
+export type NotificationType = "FOLLOW" | "LIKE" | "COMMENT";
 
 export interface Notification {
   id: string;
@@ -9,6 +9,9 @@ export interface Notification {
   isRead: boolean;
   createdAt: string;
   actor: PostAuthor;
+  // Only set for LIKE/COMMENT — the post that was liked/commented on.
+  postId: string | null;
+  // Only meaningful for FOLLOW.
   followingBack: boolean;
 }
 

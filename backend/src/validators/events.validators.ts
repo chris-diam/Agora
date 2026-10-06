@@ -10,8 +10,11 @@ export const createEventSchema = z.object({
     country: z.string().min(1, "Country is required").max(100),
     venueName: z.string().max(200).optional(),
     address: z.string().max(300).optional(),
-    latitude: z.number().min(-90).max(90).optional(),
-    longitude: z.number().min(-180).max(180).optional(),
+    // Sent as multipart form fields (the event photo shares the request),
+    // which arrive as strings even for a numeric value — coerce rather than
+    // reject.
+    latitude: z.coerce.number().min(-90).max(90).optional(),
+    longitude: z.coerce.number().min(-180).max(180).optional(),
     startDate: z.string().datetime({ message: "startDate must be a valid ISO 8601 datetime" }),
     endDate: z.string().datetime({ message: "endDate must be a valid ISO 8601 datetime" }).optional(),
     // Set when organizing this event under a community — requires

@@ -64,6 +64,12 @@ export function NotificationsBell() {
               )}
               {items.map((notification) => {
                 const isFollowingBack = notification.followingBack || followedBackIds.has(notification.actor.id);
+                const actionText =
+                  notification.type === "LIKE"
+                    ? "liked your post"
+                    : notification.type === "COMMENT"
+                      ? "commented on your post"
+                      : "started following you";
                 return (
                   <div key={notification.id} className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-white/5">
                     <Link
@@ -74,20 +80,21 @@ export function NotificationsBell() {
                       <Avatar name={notification.actor.displayName} imageUrl={notification.actor.profileImageUrl} size="sm" />
                       <span className="min-w-0 truncate">
                         <span className="font-medium text-agora-text">{notification.actor.displayName}</span>{" "}
-                        <span className="text-agora-muted">started following you</span>
+                        <span className="text-agora-muted">{actionText}</span>
                       </span>
                     </Link>
-                    {isFollowingBack ? (
-                      <span className="shrink-0 text-xs text-agora-dim">Following</span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => handleFollowBack(notification.actor.id)}
-                        className="shrink-0 rounded-full bg-agora px-3 py-1 text-xs font-medium text-agora-on hover:bg-agora-hover"
-                      >
-                        Follow back
-                      </button>
-                    )}
+                    {notification.type === "FOLLOW" &&
+                      (isFollowingBack ? (
+                        <span className="shrink-0 text-xs text-agora-dim">Following</span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleFollowBack(notification.actor.id)}
+                          className="shrink-0 rounded-full bg-agora px-3 py-1 text-xs font-medium text-agora-on hover:bg-agora-hover"
+                        >
+                          Follow back
+                        </button>
+                      ))}
                   </div>
                 );
               })}

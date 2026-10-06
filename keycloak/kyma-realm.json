@@ -27,7 +27,7 @@
   "oauth2DeviceCodeLifespan": 600,
   "oauth2DevicePollingInterval": 5,
   "enabled": true,
-  "sslRequired": "external",
+  "sslRequired": "none",
   "registrationAllowed": true,
   "registrationEmailAsUsername": false,
   "rememberMe": false,
@@ -798,7 +798,8 @@
       ],
       "webOrigins": [
         "https://agora.ch-diamantakis.workers.dev",
-        "http://localhost:5173"
+        "http://localhost:5173",
+        "http://localhost:8090"
       ],
       "notBefore": 0,
       "bearerOnly": false,

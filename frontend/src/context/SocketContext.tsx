@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { io, type Socket } from "socket.io-client";
 import { SOCKET_URL } from "../api/client";
 import { getAccessToken } from "../lib/authTokens";
+import { playMessageSound } from "../lib/notificationSound";
 import { useAuth } from "./AuthContext";
 import type { PostAuthor } from "../types";
 
@@ -106,6 +107,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
 
     socket.on("message:new", (message: IncomingMessage) => {
       queryClient.invalidateQueries({ queryKey: ["messages"] });
+      playMessageSound();
 
       // Pop up a minimized chat bubble for the sender if one isn't already
       // open and focused — mirrors Messenger's "a chat head appears when
