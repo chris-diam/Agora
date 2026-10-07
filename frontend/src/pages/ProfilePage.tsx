@@ -286,6 +286,8 @@ function ProfileEditPanel({ onDone }: { onDone: () => void }) {
     });
   };
 
+  const [saveError, setSaveError] = useState<string | null>(null);
+
   const handleAvatarChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) uploadAvatar.mutate(file);
@@ -293,10 +295,15 @@ function ProfileEditPanel({ onDone }: { onDone: () => void }) {
   };
 
   const handleSave = async () => {
-    const cleanedLinks = portfolioLinks.filter((link) => link.label.trim() && link.url.trim());
-    await updateProfile.mutateAsync({ displayName, bio, profession, portfolioLinks: cleanedLinks, city, country });
-    await setMyInterests.mutateAsync(selectedInterestIds);
-    onDone();
+    setSaveError(null);
+    try {
+      const cleanedLinks = portfolioLinks.filter((link) => link.label.trim() && link.url.trim());
+      await updateProfile.mutateAsync({ displayName, bio, profession, portfolioLinks: cleanedLinks, city, country });
+      await setMyInterests.mutateAsync(selectedInterestIds);
+      onDone();
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : "Could not save your changes.");
+    }
   };
 
   const inputClasses =
@@ -448,13 +455,14 @@ function ProfileEditPanel({ onDone }: { onDone: () => void }) {
           })}
         </div>
       </div>
+      {saveError && <p className="text-sm text-red-500">{saveError}</p>}
       <button
         type="button"
         onClick={handleSave}
         disabled={updateProfile.isPending || setMyInterests.isPending}
         className="self-start rounded-full bg-agora px-4 py-1.5 text-sm font-medium text-agora-on hover:bg-agora-hover disabled:opacity-50"
       >
-        Save changes
+        {updateProfile.isPending || setMyInterests.isPending ? "Saving..." : "Save changes"}
       </button>
     </div>
   );
