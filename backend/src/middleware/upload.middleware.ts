@@ -42,7 +42,12 @@ const ALLOWED_POST_MEDIA_MIME_TYPES = new Set([
   "video/webm",
   "video/quicktime",
 ]);
-const MAX_POST_MEDIA_SIZE_BYTES = 25 * 1024 * 1024; // 25MB — bigger than an avatar since this covers short video clips too.
+// Images get resized/recompressed server-side before storage (see
+// media.service.ts) so this limit is really about capping uncompressed
+// video, which passes through untouched — kept well under the Render
+// free-tier instance's total RAM since multer buffers the whole file in
+// memory before this handler ever runs.
+const MAX_POST_MEDIA_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 
 export const uploadPostMedia = multer({
   storage: multer.memoryStorage(),
