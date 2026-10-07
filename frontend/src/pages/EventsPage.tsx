@@ -101,10 +101,13 @@ export function EventsPage() {
       </div>
 
       <div className="bg-corkboard rounded-3xl border border-agora-border p-5 shadow-inner sm:p-8">
-        {isLoading && <p className="text-agora-muted">Loading events...</p>}
-        {isError && <p className="text-red-500">Could not load events.</p>}
+        {/* Fixed dark-brown text rather than theme-muted — this surface's
+            background color is intentionally fixed (see .bg-corkboard), so
+            theme-dependent text can't be relied on for contrast here. */}
+        {isLoading && <p style={{ color: "#4a3419" }}>Loading events...</p>}
+        {isError && <p className="font-medium text-red-900">Could not load events.</p>}
         {!isLoading && !isError && events.length === 0 && (
-          <p className="text-agora-muted">No events found — be the first to pin one up.</p>
+          <p style={{ color: "#4a3419" }}>No events found — be the first to pin one up.</p>
         )}
 
         {events.length > 0 && (

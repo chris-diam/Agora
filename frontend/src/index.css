@@ -143,23 +143,38 @@
   background-size: 44px 44px;
 }
 
-/* The Events page's corkboard surface — a speckled, slightly warm texture
-   built from the theme's own text color rather than a literal brown, so it
-   reads as "board" without introducing an off-brand color per theme.
-   Layered radial speckles at a few scales avoid the obviously-repeating
+/* The Events page's corkboard surface — the actual tan/brown of a real
+   cork board rather than a theme-tinted neutral, since the whole point of
+   the pinned-note metaphor is to read as a physical object sitting in the
+   UI, not another theme-colored panel. Intentionally fixed across all six
+   themes for that reason. Layered radial speckles (dark flecks, light
+   flecks, two soft mottled blobs for depth) avoid the obviously-repeating
    look a single small tile gives. */
 .bg-corkboard {
-  background-color: color-mix(in oklch, var(--color-agora-text) 4%, var(--color-agora-surface));
+  background-color: #c19a6b;
   background-image:
-    radial-gradient(circle at 20% 30%, color-mix(in oklch, var(--color-agora-text) 14%, transparent) 0.5px, transparent 1px),
-    radial-gradient(circle at 70% 65%, color-mix(in oklch, var(--color-agora-text) 10%, transparent) 0.5px, transparent 1px),
-    radial-gradient(circle at 45% 85%, color-mix(in oklch, var(--color-agora-text) 12%, transparent) 0.5px, transparent 1px),
-    radial-gradient(circle at 85% 15%, color-mix(in oklch, var(--color-agora-text) 9%, transparent) 0.5px, transparent 1px);
+    radial-gradient(circle at 18% 28%, rgba(84, 55, 27, 0.4) 0.5px, transparent 1.4px),
+    radial-gradient(circle at 68% 62%, rgba(84, 55, 27, 0.35) 0.5px, transparent 1.4px),
+    radial-gradient(circle at 42% 82%, rgba(84, 55, 27, 0.32) 0.5px, transparent 1.4px),
+    radial-gradient(circle at 85% 20%, rgba(84, 55, 27, 0.38) 0.5px, transparent 1.4px),
+    radial-gradient(circle at 10% 75%, rgba(84, 55, 27, 0.3) 0.5px, transparent 1.4px),
+    radial-gradient(circle at 28% 52%, rgba(255, 235, 205, 0.3) 0.5px, transparent 1.4px),
+    radial-gradient(circle at 78% 88%, rgba(255, 235, 205, 0.25) 0.5px, transparent 1.4px),
+    radial-gradient(circle at 92% 48%, rgba(255, 235, 205, 0.22) 0.5px, transparent 1.4px),
+    radial-gradient(ellipse 45% 35% at 25% 30%, rgba(84, 55, 27, 0.1), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 78% 75%, rgba(84, 55, 27, 0.08), transparent 70%);
   background-size:
+    19px 19px,
+    27px 27px,
+    15px 15px,
     23px 23px,
     31px 31px,
+    21px 21px,
+    25px 25px,
     17px 17px,
-    27px 27px;
+    100% 100%,
+    100% 100%;
+  border-color: #8a6239 !important;
 }
 
 /* Calm, slow-moving colored blobs behind the app — inspired by ink/light
