@@ -143,37 +143,25 @@
   background-size: 44px 44px;
 }
 
-/* The Events page's corkboard surface — the actual tan/brown of a real
-   cork board rather than a theme-tinted neutral, since the whole point of
-   the pinned-note metaphor is to read as a physical object sitting in the
-   UI, not another theme-colored panel. Intentionally fixed across all six
-   themes for that reason. Layered radial speckles (dark flecks, light
-   flecks, two soft mottled blobs for depth) avoid the obviously-repeating
-   look a single small tile gives. */
+/* The Events page's corkboard surface — a real cork photo, tiled, rather
+   than a theme-tinted neutral or a synthetic speckle pattern. The whole
+   point of the pinned-note metaphor is to read as a physical object sitting
+   in the UI, so the real texture reads more honestly than any CSS
+   approximation of one. Intentionally fixed across all six themes for that
+   reason. A faint radial vignette on top keeps the repeat from feeling like
+   an obvious tile at a glance. /textures/cork.jpg is a cropped, downscaled
+   (420x420, ~65KB) photo — see frontend/public/textures/. */
 .bg-corkboard {
   background-color: #c19a6b;
   background-image:
-    radial-gradient(circle at 18% 28%, rgba(84, 55, 27, 0.4) 0.5px, transparent 1.4px),
-    radial-gradient(circle at 68% 62%, rgba(84, 55, 27, 0.35) 0.5px, transparent 1.4px),
-    radial-gradient(circle at 42% 82%, rgba(84, 55, 27, 0.32) 0.5px, transparent 1.4px),
-    radial-gradient(circle at 85% 20%, rgba(84, 55, 27, 0.38) 0.5px, transparent 1.4px),
-    radial-gradient(circle at 10% 75%, rgba(84, 55, 27, 0.3) 0.5px, transparent 1.4px),
-    radial-gradient(circle at 28% 52%, rgba(255, 235, 205, 0.3) 0.5px, transparent 1.4px),
-    radial-gradient(circle at 78% 88%, rgba(255, 235, 205, 0.25) 0.5px, transparent 1.4px),
-    radial-gradient(circle at 92% 48%, rgba(255, 235, 205, 0.22) 0.5px, transparent 1.4px),
-    radial-gradient(ellipse 45% 35% at 25% 30%, rgba(84, 55, 27, 0.1), transparent 70%),
-    radial-gradient(ellipse 50% 40% at 78% 75%, rgba(84, 55, 27, 0.08), transparent 70%);
+    radial-gradient(ellipse 60% 50% at 30% 25%, rgba(0, 0, 0, 0.06), transparent 70%),
+    radial-gradient(ellipse 55% 45% at 75% 80%, rgba(0, 0, 0, 0.05), transparent 70%),
+    url("/textures/cork.jpg");
   background-size:
-    19px 19px,
-    27px 27px,
-    15px 15px,
-    23px 23px,
-    31px 31px,
-    21px 21px,
-    25px 25px,
-    17px 17px,
     100% 100%,
-    100% 100%;
+    100% 100%,
+    280px 280px;
+  background-repeat: no-repeat, no-repeat, repeat;
   border-color: #8a6239 !important;
 }
 
