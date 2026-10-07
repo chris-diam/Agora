@@ -19,7 +19,14 @@ export const errorMiddleware = (
   }
 
   if (err instanceof MulterError) {
-    const message = err.code === "LIMIT_FILE_SIZE" ? "File is too large (max 5MB)" : err.message;
+    // Each upload route uses its own multer instance with its own size
+    // limit (see upload.middleware.ts) — err.field is the form field name,
+    // which is distinct per route ("avatar" / "image" / "media"), so it
+    // doubles as a way to report the limit that actually applied instead
+    // of a single hardcoded figure that's wrong for at least one route.
+    const limitMbByField: Record<string, number> = { avatar: 5, image: 10, media: 10 };
+    const limitMb = limitMbByField[err.field ?? ""] ?? 5;
+    const message = err.code === "LIMIT_FILE_SIZE" ? `File is too large (max ${limitMb}MB)` : err.message;
     return sendError(res, message, 400);
   }
 

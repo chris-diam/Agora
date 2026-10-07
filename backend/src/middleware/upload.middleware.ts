@@ -6,11 +6,17 @@ import { AppError } from "../utils/AppError";
 // filesystem is ephemeral and gets wiped on every redeploy, which is why
 // disk storage silently lost every avatar/post image after a deploy.
 const ALLOWED_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
-const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+// Images are resized/recompressed server-side before storage (see
+// media.service.ts), so these caps are about bounding the raw upload's
+// memory footprint, not the final stored size — kept generous enough for
+// an un-cropped modern phone photo rather than forcing people to
+// pre-shrink images themselves.
+const AVATAR_MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB — a square crop never needs more.
+const EVENT_IMAGE_MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 
 export const uploadAvatar = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: MAX_FILE_SIZE_BYTES },
+  limits: { fileSize: AVATAR_MAX_FILE_SIZE_BYTES },
   fileFilter: (_req, file, callback) => {
     if (!ALLOWED_MIME_TYPES.has(file.mimetype)) {
       callback(new AppError("Avatar must be a JPEG, PNG, WebP, or GIF image", 400));
@@ -22,7 +28,7 @@ export const uploadAvatar = multer({
 
 export const uploadEventImage = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: MAX_FILE_SIZE_BYTES },
+  limits: { fileSize: EVENT_IMAGE_MAX_FILE_SIZE_BYTES },
   fileFilter: (_req, file, callback) => {
     if (!ALLOWED_MIME_TYPES.has(file.mimetype)) {
       callback(new AppError("Event photo must be a JPEG, PNG, WebP, or GIF image", 400));
