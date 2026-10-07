@@ -51,10 +51,10 @@ export function FeedTuningHeader({ feedType, onChangeFeedType, showReasons, onTo
         </TouchableOpacity>
 
         {tuneOpen && (
-          <TouchableOpacity style={styles.toggleRow} onPress={onToggleReasons}>
+          <TouchableOpacity style={styles.toggleRow} onPress={onToggleReasons} activeOpacity={0.7}>
             <Text style={styles.toggleLabel}>Explain recommendations</Text>
-            <View style={[styles.toggleTrack, showReasons && { backgroundColor: colors.agora }]}>
-              <View style={[styles.toggleThumb, showReasons && styles.toggleThumbOn]} />
+            <View style={[styles.toggleTrack, { backgroundColor: showReasons ? colors.agora : colors.agoraBorder }]}>
+              <View style={[styles.toggleThumb, showReasons ? styles.toggleThumbOn : styles.toggleThumbOff]} />
             </View>
           </TouchableOpacity>
         )}
@@ -133,15 +133,29 @@ const makeStyles = (colors: Palette) =>
     },
     toggleLabel: { fontSize: 13, color: colors.agoraMuted },
     toggleTrack: {
-      width: 38,
-      height: 22,
-      borderRadius: 11,
-      backgroundColor: colors.agoraBorder,
-      padding: 2,
-      justifyContent: "center",
+      width: 44,
+      height: 26,
+      borderRadius: 13,
+      padding: 3,
+      flexDirection: "row",
+      alignItems: "center",
     },
-    toggleThumb: { width: 18, height: 18, borderRadius: 9, backgroundColor: colors.agoraSurface },
+    // A flat white/near-black thumb regardless of theme — a theme-colored
+    // one (e.g. agoraSurface) could land too close to the track's own
+    // on/off colors in some palettes and become invisible.
+    toggleThumb: {
+      width: 20,
+      height: 20,
+      borderRadius: 10,
+      backgroundColor: "#ffffff",
+      shadowColor: "#000",
+      shadowOpacity: 0.25,
+      shadowRadius: 2,
+      shadowOffset: { width: 0, height: 1 },
+      elevation: 2,
+    },
     toggleThumbOn: { alignSelf: "flex-end" },
+    toggleThumbOff: { alignSelf: "flex-start" },
     pillsRow: { flexGrow: 0, marginBottom: 16, paddingLeft: 16 },
     pill: {
       flexDirection: "row",

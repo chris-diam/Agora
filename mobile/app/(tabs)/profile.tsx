@@ -1,19 +1,34 @@
 import { router } from "expo-router";
-import { useMemo } from "react";
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useMemo, useState } from "react";
+import { Image, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
-import { resolveMediaUrl } from "../../lib/api";
+import { apiFetch, resolveMediaUrl } from "../../lib/api";
 import { fonts, THEMES, type Palette } from "../../lib/theme";
 
 export default function ProfileScreen() {
-  const { user, logout } = useAuth();
+  const { user, logout, updateLocalUser } = useAuth();
   const { themeId, colors, setTheme } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+  const [isTogglingDigest, setIsTogglingDigest] = useState(false);
 
   const handleLogout = async () => {
     await logout();
     router.replace("/login");
+  };
+
+  const toggleEmailDigest = async () => {
+    if (!user || isTogglingDigest) return;
+    const next = !user.emailDigestOptIn;
+    setIsTogglingDigest(true);
+    updateLocalUser({ emailDigestOptIn: next });
+    try {
+      await apiFetch("/users/me", { method: "PATCH", body: JSON.stringify({ emailDigestOptIn: next }) });
+    } catch {
+      updateLocalUser({ emailDigestOptIn: !next });
+    } finally {
+      setIsTogglingDigest(false);
+    }
   };
 
   if (!user) return null;
@@ -60,6 +75,19 @@ export default function ProfileScreen() {
               </Text>
             </TouchableOpacity>
           ))}
+        </View>
+      </View>
+
+      <View style={styles.settingsSection}>
+        <Text style={styles.sectionLabel}>Notifications</Text>
+        <View style={styles.settingRow}>
+          <Text style={styles.settingLabel}>Email me about upcoming events</Text>
+          <Switch
+            value={user.emailDigestOptIn}
+            onValueChange={toggleEmailDigest}
+            trackColor={{ false: colors.agoraBorder, true: colors.agora }}
+            thumbColor="#ffffff"
+          />
         </View>
       </View>
 
@@ -115,6 +143,18 @@ const makeStyles = (colors: Palette) =>
     },
     swatchDot: { width: 10, height: 10, borderRadius: 5 },
     swatchLabel: { fontSize: 11, color: colors.agoraMuted, textAlign: "center" },
+    settingsSection: { width: "100%", marginTop: 28 },
+    settingRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      borderWidth: 1,
+      borderColor: colors.agoraBorder,
+      backgroundColor: colors.agoraSurface,
+      borderRadius: 12,
+      padding: 12,
+    },
+    settingLabel: { fontSize: 13, color: colors.agoraText, flex: 1, marginRight: 12 },
     logoutButton: {
       marginTop: 32,
       borderWidth: 1,

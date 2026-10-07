@@ -28,11 +28,15 @@ function RootNavigation() {
           <Stack.Screen name="chat/[userId]" options={modalHeaderOptions(colors)} />
           <Stack.Screen name="user/[userId]" options={modalHeaderOptions(colors, "Profile")} />
           <Stack.Screen name="group/[groupId]" options={modalHeaderOptions(colors)} />
+          <Stack.Screen name="event/[eventId]" options={modalHeaderOptions(colors)} />
           <Stack.Screen name="messages" options={modalHeaderOptions(colors, "Messages")} />
           <Stack.Screen name="notifications" options={modalHeaderOptions(colors, "Notifications")} />
           <Stack.Screen name="search" options={modalHeaderOptions(colors, "Search")} />
           <Stack.Screen name="create-post" options={modalHeaderOptions(colors, "New post")} />
           <Stack.Screen name="create-group" options={modalHeaderOptions(colors, "New group")} />
+          <Stack.Screen name="create-event" options={modalHeaderOptions(colors, "New event")} />
+          <Stack.Screen name="group-chat/[chatId]" options={modalHeaderOptions(colors)} />
+          <Stack.Screen name="create-group-chat" options={modalHeaderOptions(colors, "New group chat")} />
         </Stack>
         <ToastOverlay />
         <StatusBar style="light" />

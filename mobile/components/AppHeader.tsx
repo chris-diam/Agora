@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Modal, Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
@@ -18,6 +18,18 @@ export function AppHeader() {
   const { unreadNotificationsCount } = useSocket();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [themePickerOpen, setThemePickerOpen] = useState(false);
+  const [createPickerOpen, setCreatePickerOpen] = useState(false);
+  // Set on tap, actually navigated to from the effect below once the Modal
+  // has fully closed — calling router.push in the same tick the Modal
+  // starts unmounting doesn't reliably take effect on web.
+  const [pendingCreateTarget, setPendingCreateTarget] = useState<null | Parameters<typeof router.push>[0]>(null);
+
+  useEffect(() => {
+    if (createPickerOpen || !pendingCreateTarget) return;
+    const target = pendingCreateTarget;
+    setPendingCreateTarget(null);
+    router.push(target);
+  }, [createPickerOpen, pendingCreateTarget]);
 
   if (!user) return null;
 
@@ -36,13 +48,80 @@ export function AppHeader() {
           <Ionicons name="notifications-outline" size={19} color={colors.agoraText} />
           {unreadNotificationsCount > 0 && <View style={styles.dot} />}
         </TouchableOpacity>
-        <TouchableOpacity style={styles.createButton} onPress={() => router.push("/create-post")}>
+        <TouchableOpacity style={styles.createButton} onPress={() => setCreatePickerOpen(true)}>
           <Ionicons name="add" size={18} color={colors.agoraOn} />
         </TouchableOpacity>
       </View>
 
       <ThemePickerModal visible={themePickerOpen} onClose={() => setThemePickerOpen(false)} />
+      <CreatePickerModal
+        visible={createPickerOpen}
+        onClose={() => setCreatePickerOpen(false)}
+        onPick={(target) => {
+          setCreatePickerOpen(false);
+          setPendingCreateTarget(target);
+        }}
+      />
     </View>
+  );
+}
+
+function CreatePickerModal({
+  visible,
+  onClose,
+  onPick,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  onPick: (target: Parameters<typeof router.push>[0]) => void;
+}) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
+  const options: { label: string; description: string; icon: keyof typeof Ionicons.glyphMap; target: Parameters<typeof router.push>[0] }[] = [
+    {
+      label: "Event",
+      description: "A gathering with a date, time, and location",
+      icon: "calendar-outline",
+      target: "/create-event",
+    },
+    {
+      label: "News",
+      description: "A local, national, or world news update",
+      icon: "newspaper-outline",
+      target: { pathname: "/create-post", params: { category: "LOCAL_NEWS" } },
+    },
+    {
+      label: "Post",
+      description: "Share something with your followers",
+      icon: "create-outline",
+      target: "/create-post",
+    },
+  ];
+
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <Pressable style={styles.modalBackdrop} onPress={onClose}>
+        <Pressable style={styles.modalSheet} onPress={(e) => e.stopPropagation()}>
+          <Text style={styles.modalTitle}>What do you want to create?</Text>
+          {options.map((option) => (
+            <TouchableOpacity
+              key={option.label}
+              style={styles.createOptionRow}
+              onPress={() => onPick(option.target)}
+            >
+              <View style={styles.createOptionIcon}>
+                <Ionicons name={option.icon} size={19} color={colors.agora} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.createOptionLabel}>{option.label}</Text>
+                <Text style={styles.createOptionDescription}>{option.description}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </Pressable>
+      </Pressable>
+    </Modal>
   );
 }
 
@@ -150,4 +229,15 @@ const makeStyles = (colors: Palette) =>
     },
     swatchDot: { width: 10, height: 10, borderRadius: 5 },
     swatchLabel: { fontSize: 11, color: colors.agoraMuted, textAlign: "center" },
+    createOptionRow: { flexDirection: "row", alignItems: "center", gap: 14, paddingVertical: 8 },
+    createOptionIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: colors.agoraBg,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    createOptionLabel: { fontFamily: fonts.body, fontSize: 15, color: colors.agoraText },
+    createOptionDescription: { fontSize: 12, color: colors.agoraMuted, marginTop: 2 },
   });

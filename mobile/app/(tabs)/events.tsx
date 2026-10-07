@@ -72,14 +72,21 @@ export default function EventsScreen() {
       ListHeaderComponent={
         <View>
           <AppHeader />
-          <View style={styles.titleBlock}>
+          <View style={styles.titleRow}>
             <Text style={styles.screenTitle}>Events</Text>
+            <TouchableOpacity style={styles.createButton} onPress={() => router.push("/create-event")}>
+              <Text style={styles.createButtonText}>+ New event</Text>
+            </TouchableOpacity>
           </View>
         </View>
       }
       ListEmptyComponent={<Text style={styles.status}>No upcoming events.</Text>}
       renderItem={({ item }) => (
-        <View style={styles.card}>
+        <TouchableOpacity
+          style={styles.card}
+          activeOpacity={0.8}
+          onPress={() => router.push({ pathname: "/event/[eventId]", params: { eventId: item.id } })}
+        >
           {item.imageUrl && <Image source={{ uri: resolveMediaUrl(item.imageUrl)! }} style={styles.media} />}
           <Text style={styles.title}>{item.title}</Text>
           <Text style={styles.meta}>
@@ -94,7 +101,7 @@ export default function EventsScreen() {
             <Text style={styles.organizerText}>Organized by {item.organizer.displayName}</Text>
           </TouchableOpacity>
           <Text style={[styles.meta, styles.lastMeta]}>{item.attendeesCount} attending</Text>
-        </View>
+        </TouchableOpacity>
       )}
     />
   );
@@ -105,8 +112,23 @@ const makeStyles = (colors: Palette) =>
     screen: { flex: 1, backgroundColor: colors.agoraBg },
     list: { paddingBottom: 24 },
     status: { flex: 1, padding: 24, textAlign: "center", color: colors.agoraMuted, backgroundColor: colors.agoraBg },
-    titleBlock: { paddingHorizontal: 16, marginBottom: 12 },
+    titleRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: 16,
+      marginBottom: 12,
+    },
     screenTitle: { fontFamily: fonts.body, fontSize: 22, color: colors.agoraText },
+    createButton: {
+      borderWidth: 1,
+      borderColor: colors.agoraBorder,
+      backgroundColor: colors.agoraSurface,
+      borderRadius: 999,
+      paddingHorizontal: 12,
+      paddingVertical: 7,
+    },
+    createButtonText: { fontSize: 12, color: colors.agora, fontWeight: "600" },
     card: {
       borderWidth: 1,
       borderColor: colors.agoraBorder,

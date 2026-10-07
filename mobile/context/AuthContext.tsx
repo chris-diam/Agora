@@ -12,6 +12,7 @@ export interface CurrentUser {
   city: string | null;
   country: string | null;
   profileImageUrl: string | null;
+  emailDigestOptIn: boolean;
 }
 
 export interface RegisterInput {
@@ -28,6 +29,10 @@ interface AuthContextValue {
   login: (username: string, password: string) => Promise<void>;
   register: (input: RegisterInput) => Promise<void>;
   logout: () => Promise<void>;
+  // Merges a partial update into the locally-held user — for screens that
+  // already got the updated row back from a PATCH and want to reflect it
+  // immediately without a full refetch.
+  updateLocalUser: (patch: Partial<CurrentUser>) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -80,6 +85,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await authTokens.logout();
   };
 
+  const updateLocalUser = (patch: Partial<CurrentUser>) => {
+    setUser((current) => (current ? { ...current, ...patch } : current));
+  };
+
   const value: AuthContextValue = {
     user,
     isAuthenticated: hasSession && Boolean(user),
@@ -87,6 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     register,
     logout,
+    updateLocalUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

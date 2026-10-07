@@ -1,23 +1,47 @@
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  Linking,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 import { apiFetch, resolveMediaUrl } from "../../lib/api";
 import { fonts, type Palette } from "../../lib/theme";
 
+interface PortfolioLink {
+  label: string;
+  url: string;
+}
+
 interface UserProfile {
   id: string;
   username: string;
+  email: string;
   displayName: string;
   bio: string | null;
+  profession: string | null;
+  portfolioLinks: PortfolioLink[] | null;
   city: string | null;
   country: string | null;
   profileImageUrl: string | null;
+  isMutualFriend?: boolean;
   followersCount: number;
   followingCount: number;
   postsCount: number;
   isFollowedByViewer?: boolean;
+}
+
+interface ProfilePost {
+  id: string;
+  mediaUrl: string | null;
+  mediaType: "IMAGE" | "VIDEO" | "LINK" | null;
 }
 
 export default function UserProfileScreen() {
@@ -26,6 +50,7 @@ export default function UserProfileScreen() {
   const { userId } = useLocalSearchParams<{ userId: string }>();
   const { user: viewer } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [posts, setPosts] = useState<ProfilePost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isFollowBusy, setIsFollowBusy] = useState(false);
@@ -35,9 +60,13 @@ export default function UserProfileScreen() {
     (async () => {
       setIsLoading(true);
       try {
-        const data = await apiFetch<UserProfile>(`/users/${userId}`);
-        setProfile(data);
-        setIsFollowing(Boolean(data.isFollowedByViewer));
+        const [profileData, postsData] = await Promise.all([
+          apiFetch<UserProfile>(`/users/${userId}`),
+          apiFetch<ProfilePost[]>(`/posts?authorId=${userId}&limit=30`),
+        ]);
+        setProfile(profileData);
+        setIsFollowing(Boolean(profileData.isFollowedByViewer));
+        setPosts(postsData.filter((post) => post.mediaType === "IMAGE" && post.mediaUrl));
       } catch (err) {
         setError(err instanceof Error ? err.message : "Could not load this profile");
       } finally {
@@ -80,6 +109,7 @@ export default function UserProfileScreen() {
 
   const avatarUrl = resolveMediaUrl(profile.profileImageUrl);
   const isOwnProfile = viewer?.id === profile.id;
+  const links = (profile.portfolioLinks ?? []).filter((link) => link.label && link.url);
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
@@ -93,10 +123,37 @@ export default function UserProfileScreen() {
       )}
       <Text style={styles.name}>{profile.displayName}</Text>
       <Text style={styles.username}>@{profile.username}</Text>
+      {Boolean(profile.profession) && <Text style={styles.profession}>{profile.profession}</Text>}
       {Boolean(profile.city || profile.country) && (
         <Text style={styles.location}>{[profile.city, profile.country].filter(Boolean).join(", ")}</Text>
       )}
       {Boolean(profile.bio) && <Text style={styles.bio}>{profile.bio}</Text>}
+
+      {links.length > 0 && (
+        <View style={styles.linksRow}>
+          {links.map((link) => (
+            <TouchableOpacity
+              key={link.url}
+              style={styles.linkChip}
+              onPress={() => Linking.openURL(link.url).catch(() => {})}
+            >
+              <Text style={styles.linkChipText}>{link.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+
+      {/* Contact details only for mutual-follow friends — everyone else
+          already gets Follow/Message as the way to reach out. */}
+      {profile.isMutualFriend && (
+        <TouchableOpacity
+          style={styles.contactRow}
+          onPress={() => Linking.openURL(`mailto:${profile.email}`).catch(() => {})}
+        >
+          <Text style={styles.contactLabel}>Email</Text>
+          <Text style={styles.contactValue}>{profile.email}</Text>
+        </TouchableOpacity>
+      )}
 
       <View style={styles.statsRow}>
         <View style={styles.statItem}>
@@ -133,6 +190,14 @@ export default function UserProfileScreen() {
           </TouchableOpacity>
         </View>
       )}
+
+      {posts.length > 0 && (
+        <View style={styles.mediaGrid}>
+          {posts.map((post) => (
+            <Image key={post.id} source={{ uri: resolveMediaUrl(post.mediaUrl)! }} style={styles.mediaTile} />
+          ))}
+        </View>
+      )}
     </ScrollView>
   );
 }
@@ -148,8 +213,31 @@ const makeStyles = (colors: Palette) =>
     avatarInitial: { color: colors.agoraOn, fontSize: 32, fontWeight: "700" },
     name: { fontFamily: fonts.body, fontSize: 20, color: colors.agoraText },
     username: { fontSize: 14, color: colors.agoraMuted },
+    profession: { fontSize: 13, color: colors.agora, fontWeight: "600", marginTop: 2 },
     location: { fontSize: 13, color: colors.agoraDim },
     bio: { fontSize: 14, color: colors.agoraMuted, textAlign: "center", marginTop: 8 },
+    linksRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, justifyContent: "center", marginTop: 10 },
+    linkChip: {
+      borderWidth: 1,
+      borderColor: colors.agoraBorder,
+      backgroundColor: colors.agoraSurface,
+      borderRadius: 999,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+    },
+    linkChipText: { fontSize: 12, color: colors.agora, fontWeight: "600" },
+    contactRow: {
+      borderWidth: 1,
+      borderColor: colors.agoraBorder,
+      backgroundColor: colors.agoraSurface,
+      borderRadius: 12,
+      paddingVertical: 8,
+      paddingHorizontal: 14,
+      marginTop: 10,
+      alignItems: "center",
+    },
+    contactLabel: { fontSize: 10, color: colors.agoraMuted, textTransform: "uppercase", fontWeight: "700" },
+    contactValue: { fontSize: 13, color: colors.agora, marginTop: 2 },
     statsRow: { flexDirection: "row", gap: 28, marginTop: 20 },
     statItem: { alignItems: "center" },
     statNumber: { fontSize: 17, fontWeight: "700", color: colors.agoraText },
@@ -173,4 +261,17 @@ const makeStyles = (colors: Palette) =>
       paddingHorizontal: 22,
     },
     messageButtonText: { color: colors.agoraText, fontWeight: "600" },
+    mediaGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 3,
+      marginTop: 28,
+      width: "100%",
+    },
+    mediaTile: {
+      width: "32.5%",
+      aspectRatio: 1,
+      borderRadius: 4,
+      backgroundColor: colors.agoraSurface,
+    },
   });

@@ -1,5 +1,5 @@
 import * as ImagePicker from "expo-image-picker";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -32,9 +32,10 @@ const CATEGORIES: { value: string; label: string }[] = [
 export default function CreatePostScreen() {
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+  const { category: initialCategory } = useLocalSearchParams<{ category?: string }>();
 
   const [content, setContent] = useState("");
-  const [category, setCategory] = useState("GENERAL");
+  const [category, setCategory] = useState(initialCategory ?? "GENERAL");
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);

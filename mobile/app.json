@@ -27,7 +27,15 @@
       "expo-status-bar",
       "expo-secure-store",
       "expo-asset",
-      "expo-font"
+      "expo-font",
+      "expo-image-picker",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "KYMA uses your location to fill in an event's city automatically."
+        }
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true
