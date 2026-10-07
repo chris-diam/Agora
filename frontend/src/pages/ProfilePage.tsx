@@ -277,10 +277,13 @@ function ProfileEditPanel({ onDone }: { onDone: () => void }) {
     setPortfolioLinks((previous) => previous.filter((_, i) => i !== index));
   };
 
+  const MAX_VIBES = 3;
   const toggleInterest = (interestId: string) => {
-    setSelectedInterestIds((previous) =>
-      previous.includes(interestId) ? previous.filter((id) => id !== interestId) : [...previous, interestId]
-    );
+    setSelectedInterestIds((previous) => {
+      if (previous.includes(interestId)) return previous.filter((id) => id !== interestId);
+      if (previous.length >= MAX_VIBES) return previous;
+      return [...previous, interestId];
+    });
   };
 
   const handleAvatarChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -406,20 +409,43 @@ function ProfileEditPanel({ onDone }: { onDone: () => void }) {
         />
       </div>
       <div>
-        <p className="mb-1 text-sm font-medium text-agora-muted">Interests</p>
-        <div className="flex flex-wrap gap-2">
-          {(interestsResult?.data ?? []).map((interest) => (
-            <button
-              key={interest.id}
-              type="button"
-              onClick={() => toggleInterest(interest.id)}
-              className={`rounded-full px-3 py-1 text-xs ${
-                selectedInterestIds.includes(interest.id) ? "bg-agora text-agora-on" : "bg-agora-light text-agora-muted"
-              }`}
-            >
-              {interest.name}
-            </button>
-          ))}
+        <div className="mb-2 flex items-baseline justify-between">
+          <p className="font-medium text-agora-text" style={{ fontFamily: "Wellfleet, serif" }}>
+            What's your vibe?
+          </p>
+          <span className="text-xs text-agora-dim">{selectedInterestIds.length}/{MAX_VIBES} selected</span>
+        </div>
+        <p className="mb-3 text-xs text-agora-muted">Pick up to three — they shape what your feed leads with.</p>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {(interestsResult?.data ?? []).map((interest) => {
+            const isSelected = selectedInterestIds.includes(interest.id);
+            const isDisabled = !isSelected && selectedInterestIds.length >= MAX_VIBES;
+            return (
+              <button
+                key={interest.id}
+                type="button"
+                onClick={() => toggleInterest(interest.id)}
+                disabled={isDisabled}
+                aria-pressed={isSelected}
+                className={`group relative rounded-xl border px-3 py-3 text-left transition-colors ${
+                  isSelected
+                    ? "border-agora bg-agora text-agora-on"
+                    : isDisabled
+                      ? "border-agora-border bg-agora-surface/40 text-agora-dim opacity-50"
+                      : "border-agora-border bg-agora-surface text-agora-text hover:border-agora/50"
+                }`}
+              >
+                <span className="block text-sm font-semibold" style={{ fontFamily: "Wellfleet, serif" }}>
+                  {interest.name}
+                </span>
+                {isSelected && (
+                  <span className="absolute top-2 right-2 flex h-4 w-4 items-center justify-center rounded-full bg-agora-on/90 text-[10px] font-bold text-agora">
+                    ✓
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
       <button

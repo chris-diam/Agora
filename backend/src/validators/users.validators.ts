@@ -16,6 +16,7 @@ export const updateProfileSchema = z.object({
       city: z.string().max(100).optional(),
       country: z.string().max(100).optional(),
       profileImageUrl: z.string().url().optional(),
+      emailDigestOptIn: z.boolean().optional(),
     })
     .refine((data) => Object.keys(data).length > 0, {
       message: "At least one field must be provided",

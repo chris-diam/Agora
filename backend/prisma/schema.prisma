@@ -54,6 +54,10 @@ model User {
   city            String?
   country         String?
   profileImageUrl String?
+  // Opt-in for the upcoming-events email digest — on by default like the
+  // rest of the app's notifications, since this is informational rather
+  // than social/public like a post.
+  emailDigestOptIn Boolean @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -80,6 +84,10 @@ model User {
 
   sentMessages     Message[] @relation("SentMessages")
   receivedMessages Message[] @relation("ReceivedMessages")
+
+  createdGroupChats  GroupChat[]       @relation("GroupChatCreator")
+  groupChatMembers   GroupChatMember[]
+  sentGroupMessages  GroupMessage[]
 
   @@index([city, country])
 }
@@ -406,4 +414,49 @@ model Message {
   @@index([senderId, recipientId, createdAt])
   @@index([recipientId, senderId, createdAt])
   @@index([recipientId, isRead])
+}
+
+// ────────────────────────────────
+// GROUP CHATS
+// ────────────────────────────────
+// Separate from the 1:1 Message model rather than generalizing it — group
+// membership and fan-out (sending to N members instead of one recipient)
+// are different enough shapes that forcing them into Message's
+// sender/recipient columns would make both harder to reason about.
+
+model GroupChat {
+  id        String   @id @default(cuid())
+  name      String
+  creatorId String
+  createdAt DateTime @default(now())
+
+  creator  User                @relation("GroupChatCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  members  GroupChatMember[]
+  messages GroupMessage[]
+}
+
+model GroupChatMember {
+  id          String   @id @default(cuid())
+  groupChatId String
+  userId      String
+  joinedAt    DateTime @default(now())
+
+  groupChat GroupChat @relation(fields: [groupChatId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupChatId, userId])
+  @@index([userId])
+}
+
+model GroupMessage {
+  id          String   @id @default(cuid())
+  groupChatId String
+  senderId    String
+  content     String
+  createdAt   DateTime @default(now())
+
+  groupChat GroupChat @relation(fields: [groupChatId], references: [id], onDelete: Cascade)
+  sender    User      @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([groupChatId, createdAt])
 }

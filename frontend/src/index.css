@@ -143,6 +143,25 @@
   background-size: 44px 44px;
 }
 
+/* The Events page's corkboard surface — a speckled, slightly warm texture
+   built from the theme's own text color rather than a literal brown, so it
+   reads as "board" without introducing an off-brand color per theme.
+   Layered radial speckles at a few scales avoid the obviously-repeating
+   look a single small tile gives. */
+.bg-corkboard {
+  background-color: color-mix(in oklch, var(--color-agora-text) 4%, var(--color-agora-surface));
+  background-image:
+    radial-gradient(circle at 20% 30%, color-mix(in oklch, var(--color-agora-text) 14%, transparent) 0.5px, transparent 1px),
+    radial-gradient(circle at 70% 65%, color-mix(in oklch, var(--color-agora-text) 10%, transparent) 0.5px, transparent 1px),
+    radial-gradient(circle at 45% 85%, color-mix(in oklch, var(--color-agora-text) 12%, transparent) 0.5px, transparent 1px),
+    radial-gradient(circle at 85% 15%, color-mix(in oklch, var(--color-agora-text) 9%, transparent) 0.5px, transparent 1px);
+  background-size:
+    23px 23px,
+    31px 31px,
+    17px 17px,
+    27px 27px;
+}
+
 /* Calm, slow-moving colored blobs behind the app — inspired by ink/light
    moving in glass. Pure CSS, no images/libraries. Kept subtle (heavy blur,
    low opacity, slow duration) so content stays easy to read, and disabled
