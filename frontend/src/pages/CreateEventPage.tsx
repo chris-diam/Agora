@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCreateEvent } from "../hooks/useEvents";
 import { useCommunity } from "../hooks/useCommunities";
 import { useAuth } from "../context/AuthContext";
+import { DateTimePicker } from "../components/DateTimePicker";
 import { CameraIcon, CloseIcon } from "../components/icons";
 import type { EventCategory } from "../types";
 
@@ -112,11 +113,11 @@ export function CreateEventPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // A single combined date+time input instead of the old separate start/end
+  // A single combined date+time picker instead of the old separate start/end
   // date and time fields — fewer fields to fill, and events in this app
   // don't otherwise use an end time anywhere (event cards/details only ever
   // show the start).
-  const [startAt, setStartAt] = useState("");
+  const [startAt, setStartAt] = useState<Date | null>(null);
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
@@ -154,12 +155,6 @@ export function CreateEventPage() {
       return;
     }
 
-    const startDate = new Date(startAt);
-    if (Number.isNaN(startDate.getTime())) {
-      setError("The date/time doesn't look valid.");
-      return;
-    }
-
     try {
       const created = await createEvent.mutateAsync({
         title: title.trim(),
@@ -169,7 +164,7 @@ export function CreateEventPage() {
         country: location.country,
         latitude: location.latitude,
         longitude: location.longitude,
-        startDate: startDate.toISOString(),
+        startDate: startAt.toISOString(),
         imageFile: imageFile ?? undefined,
         communityId,
       });
@@ -253,12 +248,7 @@ export function CreateEventPage() {
 
         <label className={labelClasses}>
           Date & time
-          <input
-            type="datetime-local"
-            value={startAt}
-            onChange={(event) => setStartAt(event.target.value)}
-            className={fieldClasses}
-          />
+          <DateTimePicker value={startAt} onChange={setStartAt} minDate={new Date(new Date().setHours(0, 0, 0, 0))} />
         </label>
 
         {error && <p className="text-sm text-red-500">{error}</p>}

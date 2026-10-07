@@ -23,7 +23,10 @@ export function PostCard({ post, reason }: PostCardProps) {
   const isOwner = user?.id === post.authorId;
 
   return (
-    <article className="rounded-2xl border border-agora-border bg-agora-surface/80 p-4 shadow-sm shadow-black/20 backdrop-blur-xl transition-transform duration-200 ease-out hover:scale-[1.015] hover:shadow-lg hover:shadow-black/30 motion-reduce:transition-none motion-reduce:hover:scale-100">
+    <article
+      id={`post-${post.id}`}
+      className="scroll-mt-20 rounded-2xl border border-agora-border bg-agora-surface/80 p-4 shadow-sm shadow-black/20 backdrop-blur-xl transition-transform duration-200 ease-out hover:scale-[1.015] hover:shadow-lg hover:shadow-black/30 motion-reduce:transition-none motion-reduce:hover:scale-100"
+    >
       {reason && (
         <p className="mb-3 flex items-center gap-1.5 rounded-full bg-agora-light px-3 py-1 text-xs font-medium text-agora-hover">
           {reason}

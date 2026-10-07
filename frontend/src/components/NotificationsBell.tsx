@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { useFollowUser } from "../hooks/useUsers";
 import { useMarkAllNotificationsRead, useNotifications, useUnreadNotificationCount } from "../hooks/useNotifications";
 import { Avatar } from "./Avatar";
 import { BellIcon } from "./icons";
 
 export function NotificationsBell() {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   // Locally-tracked "just followed back" ids — the list stays open after
   // clicking Follow back, so we flip that row immediately rather than
@@ -70,10 +72,19 @@ export function NotificationsBell() {
                     : notification.type === "COMMENT"
                       ? "commented on your post"
                       : "started following you";
+                // LIKE/COMMENT notifications are always about one of the
+                // viewer's own posts (you're only notified on your own
+                // content), so the post lives on the viewer's own profile —
+                // link there anchored to the post rather than to the actor
+                // who liked/commented, which just re-opened their profile.
+                const target =
+                  (notification.type === "LIKE" || notification.type === "COMMENT") && notification.postId
+                    ? `/profile/${user?.id}#post-${notification.postId}`
+                    : `/profile/${notification.actor.id}`;
                 return (
                   <div key={notification.id} className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-white/5">
                     <Link
-                      to={`/profile/${notification.actor.id}`}
+                      to={target}
                       onClick={() => setIsOpen(false)}
                       className="flex min-w-0 flex-1 items-center gap-3"
                     >

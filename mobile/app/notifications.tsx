@@ -2,6 +2,7 @@ import { router, useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Avatar } from "../components/Avatar";
+import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
 import { useTheme } from "../context/ThemeContext";
 import { apiFetch } from "../lib/api";
@@ -13,6 +14,8 @@ interface NotificationItem {
   type: "FOLLOW" | "LIKE" | "COMMENT";
   createdAt: string;
   actor: { id: string; displayName: string; profileImageUrl: string | null };
+  // Only set for LIKE/COMMENT — the post that was liked/commented on.
+  postId: string | null;
 }
 
 const TEXT_BY_TYPE: Record<NotificationItem["type"], string> = {
@@ -22,6 +25,7 @@ const TEXT_BY_TYPE: Record<NotificationItem["type"], string> = {
 };
 
 export default function NotificationsScreen() {
+  const { user } = useAuth();
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const { refreshUnreadNotificationsCount } = useSocket();
@@ -63,7 +67,15 @@ export default function NotificationsScreen() {
       renderItem={({ item }) => (
         <TouchableOpacity
           style={styles.row}
-          onPress={() => router.push({ pathname: "/user/[userId]", params: { userId: item.actor.id } })}
+          onPress={() => {
+            // LIKE/COMMENT is always about one of the viewer's own posts
+            // (you're only notified on your own content) — go to the
+            // viewer's own profile rather than the actor who liked/
+            // commented, which just re-opened their profile instead.
+            const targetUserId =
+              (item.type === "LIKE" || item.type === "COMMENT") && user ? user.id : item.actor.id;
+            router.push({ pathname: "/user/[userId]", params: { userId: targetUserId } });
+          }}
         >
           <Avatar name={item.actor.displayName} imageUrl={item.actor.profileImageUrl} size={40} />
           <View style={styles.rowText}>
