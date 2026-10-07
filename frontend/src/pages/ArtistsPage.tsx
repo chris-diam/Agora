@@ -4,10 +4,25 @@ import { Avatar } from "../components/Avatar";
 import { MicIcon } from "../components/icons";
 import { Pagination } from "../components/Pagination";
 import { useArtists } from "../hooks/useUsers";
+import type { PostCategory } from "../types";
+
+// Filters by the post-category of the artist's selected "vibe" interests
+// (Interest.relatedCategory) rather than their free-text profession — a
+// tight, creative-leaning subset of PostCategory rather than every value
+// (Technology/Science/News don't fit the "Artists" framing).
+const ARTIST_CATEGORY_TABS: { label: string; value: PostCategory | "" }[] = [
+  { label: "All", value: "" },
+  { label: "Music", value: "MUSIC" },
+  { label: "Art", value: "ART" },
+  { label: "Theatre", value: "THEATRE" },
+  { label: "Cinema", value: "CINEMA" },
+  { label: "Culture", value: "CULTURE" },
+];
 
 export function ArtistsPage() {
   const [page, setPage] = useState(1);
-  const { data, isLoading, isError } = useArtists({ page });
+  const [category, setCategory] = useState<PostCategory | "">("");
+  const { data, isLoading, isError } = useArtists({ page, category: category || undefined });
   const artists = data?.data ?? [];
 
   return (
@@ -27,10 +42,34 @@ export function ArtistsPage() {
         </p>
       </section>
 
+      <div className="flex flex-wrap gap-2">
+        {ARTIST_CATEGORY_TABS.map((tab) => (
+          <button
+            key={tab.label}
+            type="button"
+            onClick={() => {
+              setCategory(tab.value);
+              setPage(1);
+            }}
+            className={
+              category === tab.value
+                ? "rounded-full bg-agora px-3.5 py-1.5 text-sm font-medium text-agora-on"
+                : "rounded-full border border-agora-border bg-agora-surface/80 px-3.5 py-1.5 text-sm text-agora-muted hover:bg-agora-surface"
+            }
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       {isLoading && <p className="text-agora-muted">Loading artists...</p>}
       {isError && <p className="text-red-500">Could not load artists.</p>}
       {!isLoading && artists.length === 0 && (
-        <p className="text-agora-muted">No one has added a profession to their profile yet.</p>
+        <p className="text-agora-muted">
+          {category
+            ? "No artists in this category yet."
+            : "No one has added a profession to their profile yet."}
+        </p>
       )}
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">

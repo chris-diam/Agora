@@ -1,9 +1,10 @@
 import { apiFetch, buildQuery } from "./client";
-import type { PortfolioLink, PublicUser, UserProfile } from "../types";
+import type { PortfolioLink, PostCategory, PublicUser, UserProfile } from "../types";
 
 export interface ListArtistsParams {
   page?: number;
   limit?: number;
+  category?: PostCategory | PostCategory[];
 }
 
 export interface UpdateProfileInput {

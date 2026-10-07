@@ -1,3 +1,4 @@
+import { PostCategory } from "@prisma/client";
 import { Request, Response } from "express";
 import * as usersService from "../services/users.service";
 import { AppError } from "../utils/AppError";
@@ -12,7 +13,14 @@ export const getUser = asyncHandler(async (req: Request, res: Response) => {
 
 export const listArtists = asyncHandler(async (req: Request, res: Response) => {
   const pagination = getPaginationParams(req.query);
-  const { items, pagination: meta } = await usersService.listArtists(pagination);
+  // validate() only checks req.query against the schema (comma-separated,
+  // one-or-more PostCategory values) — it doesn't mutate req.query, so the
+  // split into an array happens here (same pattern as postsController.listPosts).
+  const categories =
+    typeof req.query.category === "string"
+      ? (req.query.category.split(",").map((c) => c.trim()) as PostCategory[])
+      : undefined;
+  const { items, pagination: meta } = await usersService.listArtists(pagination, categories);
   return sendSuccess(res, items, 200, meta);
 });
 

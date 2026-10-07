@@ -1,3 +1,4 @@
+import { PostCategory } from "@prisma/client";
 import { z } from "zod";
 
 const portfolioLinkSchema = z.object({
@@ -27,6 +28,22 @@ export const listQuerySchema = z.object({
   query: z.object({
     page: z.string().optional(),
     limit: z.string().optional(),
+  }),
+});
+
+export const listArtistsQuerySchema = z.object({
+  query: z.object({
+    page: z.string().optional(),
+    limit: z.string().optional(),
+    // Filters by the post-category of the artist's selected interests
+    // (vibes) — e.g. "MUSIC" matches anyone who picked an interest like
+    // "Jazz" that maps to MUSIC. Comma-separated for a multi-category tab
+    // like "Arts & culture", same convention as posts/events listing.
+    category: z
+      .string()
+      .transform((value) => value.split(",").map((v) => v.trim()))
+      .pipe(z.array(z.nativeEnum(PostCategory)).min(1))
+      .optional(),
   }),
 });
 

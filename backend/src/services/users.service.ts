@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, PostCategory } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { AppError } from "../utils/AppError";
 import { buildPaginationMeta, PaginationParams } from "../utils/pagination";
@@ -27,8 +27,18 @@ export const publicUserSelect = {
 // Users who've opted into the "artist page" fields on their profile —
 // backs the Artists directory. No separate profile/page entity: anyone can
 // set a profession and show up here.
-export const listArtists = async ({ page, limit, skip }: PaginationParams) => {
-  const where: Prisma.UserWhereInput = { profession: { not: null } };
+export const listArtists = async (
+  { page, limit, skip }: PaginationParams,
+  categories?: PostCategory[]
+) => {
+  const where: Prisma.UserWhereInput = {
+    profession: { not: null },
+    // Filters by the post-category of the artist's selected interests
+    // (vibes) rather than parsing their free-text profession — reuses the
+    // same structured Interest -> relatedCategory mapping the rest of the
+    // app already filters posts/events by.
+    ...(categories ? { interests: { some: { interest: { relatedCategory: { in: categories } } } } } : {}),
+  };
 
   const [rows, totalItems] = await Promise.all([
     prisma.user.findMany({

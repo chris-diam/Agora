@@ -18,11 +18,20 @@ const EVENT_CATEGORIES: EventCategory[] = [
   "OTHER",
 ];
 
+// Mirrors MusicPage/ArtsCulturePage's own event-category groupings — the
+// same "which categories count as Music / Arts & culture" split, just
+// surfaced as quick tabs here instead of a separate nav destination.
+const MUSIC_EVENT_CATEGORIES: EventCategory[] = ["MUSIC", "CONCERT"];
+const ARTS_EVENT_CATEGORIES: EventCategory[] = ["ART", "EXHIBITION", "THEATRE", "CINEMA", "CULTURE", "FESTIVAL"];
+
+const sameCategorySet = (a: EventCategory[], b: EventCategory | EventCategory[] | "") =>
+  Array.isArray(b) && a.length === b.length && a.every((value) => b.includes(value));
+
 export function EventsPage() {
   const { isAuthenticated } = useAuth();
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("");
-  const [category, setCategory] = useState<EventCategory | "">("");
+  const [category, setCategory] = useState<EventCategory | EventCategory[] | "">("");
   const [date, setDate] = useState("");
   const [page, setPage] = useState(1);
 
@@ -55,6 +64,38 @@ export function EventsPage() {
         )}
       </div>
 
+      <div className="flex flex-wrap gap-2">
+        {([
+          { label: "All events", active: category === "", onClick: () => setCategory("") },
+          {
+            label: "Music",
+            active: sameCategorySet(MUSIC_EVENT_CATEGORIES, category),
+            onClick: () => setCategory(MUSIC_EVENT_CATEGORIES),
+          },
+          {
+            label: "Arts & culture",
+            active: sameCategorySet(ARTS_EVENT_CATEGORIES, category),
+            onClick: () => setCategory(ARTS_EVENT_CATEGORIES),
+          },
+        ] as const).map((tab) => (
+          <button
+            key={tab.label}
+            type="button"
+            onClick={() => {
+              tab.onClick();
+              setPage(1);
+            }}
+            className={
+              tab.active
+                ? "rounded-full bg-agora px-3.5 py-1.5 text-sm font-medium text-agora-on"
+                : "rounded-full border border-agora-border bg-agora-surface/80 px-3.5 py-1.5 text-sm text-agora-muted hover:bg-agora-surface"
+            }
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       <div className="flex flex-wrap gap-2 rounded-2xl border border-agora-border bg-agora-surface/80 p-3 shadow-sm shadow-black/20 backdrop-blur-xl">
         <input
           value={city}
@@ -75,7 +116,7 @@ export function EventsPage() {
           className="rounded-xl border border-agora-border bg-agora-surface px-3 py-1.5 text-sm focus:ring-2 focus:ring-agora/30 focus:outline-none"
         />
         <select
-          value={category}
+          value={Array.isArray(category) ? "" : category}
           onChange={(event) => {
             setCategory(event.target.value as EventCategory | "");
             setPage(1);

@@ -6,7 +6,7 @@ import { optionalAuth } from "../middleware/optionalAuth.middleware";
 import { uploadAvatar } from "../middleware/upload.middleware";
 import { validate } from "../middleware/validate.middleware";
 import { setInterestsSchema } from "../validators/interests.validators";
-import { updateProfileSchema } from "../validators/users.validators";
+import { listArtistsQuerySchema, updateProfileSchema } from "../validators/users.validators";
 
 const router = Router();
 
@@ -23,7 +23,7 @@ router.post("/me/avatar", requireAuth, uploadAvatar, usersController.uploadAvata
 
 // Fixed-segment "/artists" is likewise registered before "/:id" so it
 // can't be shadowed by the param route.
-router.get("/artists", usersController.listArtists);
+router.get("/artists", validate(listArtistsQuerySchema), usersController.listArtists);
 
 router.get("/:id", optionalAuth, usersController.getUser);
 router.post("/:id/follow", requireAuth, usersController.follow);
