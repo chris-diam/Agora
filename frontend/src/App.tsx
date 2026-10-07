@@ -18,6 +18,7 @@ import { ConversationPage } from "./pages/ConversationPage";
 import { CreateCommunityPage } from "./pages/CreateCommunityPage";
 import { CreateEventPage } from "./pages/CreateEventPage";
 import { CreatePostPage } from "./pages/CreatePostPage";
+import { WriteArticlePage } from "./pages/WriteArticlePage";
 import { EventDetailsPage } from "./pages/EventDetailsPage";
 import { EventsPage } from "./pages/EventsPage";
 import { FeedPage } from "./pages/FeedPage";
@@ -123,6 +124,7 @@ export default function App() {
                       <Route path="/events/new" element={<CreateEventPage />} />
                       <Route path="/communities/new" element={<CreateCommunityPage />} />
                       <Route path="/posts/new" element={<CreatePostPage />} />
+                      <Route path="/news/write" element={<WriteArticlePage />} />
                       <Route path="/friends" element={<FriendsPage />} />
                       <Route path="/saved" element={<SavedPostsPage />} />
                       <Route path="/messages" element={<MessagesPage />} />

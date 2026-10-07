@@ -18,6 +18,10 @@ interface PostAuthor {
 export interface PostCardPost {
   id: string;
   content: string;
+  // Only set for article-style posts (written via the News category's
+  // headline field) — presence of a title is what picks the headline
+  // treatment below over a plain post.
+  title?: string | null;
   mediaUrl: string | null;
   category: string;
   city: string | null;
@@ -164,6 +168,7 @@ export function PostCard({ post, showReason, reason }: { post: PostCardPost; sho
 
         {showReason && reason && <Text style={styles.reason}>{reason}</Text>}
 
+        {Boolean(post.title) && <Text style={styles.headline}>{post.title}</Text>}
         <Text style={styles.content}>{post.content}</Text>
 
         <View style={styles.actionsRow}>
@@ -250,6 +255,7 @@ const makeStyles = (colors: Palette) =>
     },
     categoryPillText: { fontSize: 9, fontWeight: "700", color: colors.agoraDim, letterSpacing: 0.4 },
     reason: { fontSize: 12, color: colors.agoraDim },
+    headline: { fontFamily: fonts.body, fontWeight: "700", fontSize: 20, lineHeight: 26, color: colors.agoraText, marginBottom: 2 },
     content: { fontFamily: fonts.body, fontSize: 19, lineHeight: 25, color: colors.agoraText },
     actionsRow: { flexDirection: "row", gap: 18, marginTop: 2 },
     actionButton: { flexDirection: "row", alignItems: "center", gap: 5 },

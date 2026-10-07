@@ -34,8 +34,10 @@ export default function CreatePostScreen() {
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const { category: initialCategory } = useLocalSearchParams<{ category?: string }>();
 
+  const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [category, setCategory] = useState(initialCategory ?? "GENERAL");
+  const isNewsCategory = category === "LOCAL_NEWS" || category === "NATIONAL_NEWS" || category === "WORLD_NEWS";
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,6 +63,7 @@ export default function CreatePostScreen() {
       const formData = new FormData();
       formData.append("content", content.trim());
       formData.append("category", category);
+      if (isNewsCategory && title.trim()) formData.append("title", title.trim());
       if (imageUri) {
         const fileName = imageUri.split("/").pop() ?? "post.jpg";
         const extension = fileName.split(".").pop()?.toLowerCase();
@@ -82,15 +85,6 @@ export default function CreatePostScreen() {
     <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
       <Text style={styles.title}>New post</Text>
 
-      <TextInput
-        style={styles.textArea}
-        placeholder="What's happening?"
-        placeholderTextColor={colors.agoraMuted}
-        value={content}
-        onChangeText={setContent}
-        multiline
-      />
-
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryRow}>
         {CATEGORIES.map((item) => (
           <TouchableOpacity
@@ -104,6 +98,25 @@ export default function CreatePostScreen() {
           </TouchableOpacity>
         ))}
       </ScrollView>
+
+      {isNewsCategory && (
+        <TextInput
+          style={styles.input}
+          placeholder="Headline (optional — makes this an article)"
+          placeholderTextColor={colors.agoraMuted}
+          value={title}
+          onChangeText={setTitle}
+        />
+      )}
+
+      <TextInput
+        style={styles.textArea}
+        placeholder={isNewsCategory ? "Write the full story…" : "What's happening?"}
+        placeholderTextColor={colors.agoraMuted}
+        value={content}
+        onChangeText={setContent}
+        multiline
+      />
 
       {imageUri ? (
         <View style={styles.previewWrap}>
@@ -132,6 +145,16 @@ const makeStyles = (colors: Palette) =>
     screen: { flex: 1, backgroundColor: colors.agoraBg },
     container: { padding: 20, gap: 14 },
     title: { fontFamily: fonts.body, fontSize: 20, color: colors.agoraText },
+    input: {
+      borderWidth: 1,
+      borderColor: colors.agoraBorder,
+      backgroundColor: colors.agoraSurface,
+      borderRadius: 12,
+      padding: 12,
+      color: colors.agoraText,
+      fontSize: 16,
+      fontFamily: fonts.body,
+    },
     textArea: {
       minHeight: 100,
       borderWidth: 1,

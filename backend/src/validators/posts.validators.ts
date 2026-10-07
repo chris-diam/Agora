@@ -7,6 +7,9 @@ import { z } from "zod";
 export const createPostSchema = z.object({
   body: z.object({
     content: z.string().min(1, "Content is required").max(5000, "Content must be at most 5000 characters"),
+    // Article-style posts only (the News page's "Write an article" flow) —
+    // a plain post has no title.
+    title: z.string().min(1).max(200).optional(),
     category: z.nativeEnum(PostCategory).optional(),
     city: z.string().max(100).optional(),
     country: z.string().max(100).optional(),
@@ -23,6 +26,7 @@ export const updatePostSchema = z.object({
   body: z
     .object({
       content: z.string().min(1).max(5000).optional(),
+      title: z.string().min(1).max(200).optional(),
       category: z.nativeEnum(PostCategory).optional(),
       city: z.string().max(100).optional(),
       country: z.string().max(100).optional(),

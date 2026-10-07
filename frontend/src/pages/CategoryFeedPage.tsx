@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { EventCard } from "../components/EventCard";
 import { Feed } from "../components/Feed";
 import { useEvents } from "../hooks/useEvents";
@@ -17,6 +18,9 @@ interface CategoryFeedPageProps {
   // Arts & Culture) reads like an editorial section front. Still built
   // from the same theme tokens either way.
   mood: "wire" | "masthead";
+  // News-only: links to the dedicated article composer. Omitted elsewhere
+  // since Music/Arts & Culture have no article-writing flow.
+  writeArticleHref?: string;
 }
 
 // Shared data-fetching shell for News, Music, and Arts & Culture — each is
@@ -31,6 +35,7 @@ export function CategoryFeedPage({
   eventCategories,
   Icon,
   mood,
+  writeArticleHref,
 }: CategoryFeedPageProps) {
   const [page, setPage] = useState(1);
   const { data, isLoading, isError, error } = usePosts({ category: postCategories, page });
@@ -44,11 +49,19 @@ export function CategoryFeedPage({
         {mood === "wire" ? (
           <section className="flex items-start gap-4 border-l-4 border-agora py-1 pl-5">
             <Icon className="mt-1 h-7 w-7 shrink-0 text-agora" />
-            <div>
+            <div className="flex-1">
               <p className="text-xs font-semibold tracking-[0.2em] text-agora-dim uppercase">Dispatch</p>
               <h1 className="text-3xl font-semibold text-agora-text">{title}</h1>
               <p className="mt-1 text-agora-muted">{description}</p>
             </div>
+            {writeArticleHref && (
+              <Link
+                to={writeArticleHref}
+                className="shrink-0 self-center rounded-full bg-agora px-4 py-2 text-sm font-medium text-agora-on hover:bg-agora-hover"
+              >
+                Write an article
+              </Link>
+            )}
           </section>
         ) : (
           <section className="relative overflow-hidden rounded-3xl border border-agora-border bg-agora-surface/80 p-6 shadow-sm shadow-black/20 backdrop-blur-xl">

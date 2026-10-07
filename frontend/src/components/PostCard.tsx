@@ -44,8 +44,20 @@ export function PostCard({ post, reason }: PostCardProps) {
           {post.category}
         </span>
       </div>
-      <p className="mb-3 whitespace-pre-line text-agora-text">{post.content}</p>
-      <PostMedia mediaUrl={post.mediaUrl} mediaType={post.mediaType} />
+      {post.title ? (
+        <div className="mb-3">
+          <PostMedia mediaUrl={post.mediaUrl} mediaType={post.mediaType} />
+          <h2 className="mb-1.5 text-xl font-semibold text-agora-text" style={{ fontFamily: "Wellfleet, serif" }}>
+            {post.title}
+          </h2>
+          <p className="whitespace-pre-line text-agora-text">{post.content}</p>
+        </div>
+      ) : (
+        <>
+          <p className="mb-3 whitespace-pre-line text-agora-text">{post.content}</p>
+          <PostMedia mediaUrl={post.mediaUrl} mediaType={post.mediaType} />
+        </>
+      )}
       {(post.city || post.country) && (
         <p className="mb-2 text-xs text-agora-dim">{[post.city, post.country].filter(Boolean).join(", ")}</p>
       )}

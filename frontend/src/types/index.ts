@@ -88,6 +88,10 @@ export interface Post {
   id: string;
   authorId: string;
   content: string;
+  // Only set for article-style posts (written via the News page's "Write
+  // an article" flow) — presence of a title is what the frontend uses to
+  // pick the article card treatment over the regular post card.
+  title: string | null;
   category: PostCategory;
   city: string | null;
   country: string | null;

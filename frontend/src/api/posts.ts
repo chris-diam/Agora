@@ -11,6 +11,7 @@ export interface ListPostsParams {
 
 export interface CreatePostInput {
   content: string;
+  title?: string;
   category?: PostCategory;
   city?: string;
   country?: string;
@@ -32,6 +33,7 @@ export const getPost = (id: string) => apiFetch<Post>(`/posts/${id}`);
 export const createPost = (input: CreatePostInput) => {
   const formData = new FormData();
   formData.append("content", input.content);
+  if (input.title) formData.append("title", input.title);
   if (input.category) formData.append("category", input.category);
   if (input.city) formData.append("city", input.city);
   if (input.country) formData.append("country", input.country);

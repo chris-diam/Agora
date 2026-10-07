@@ -9,6 +9,7 @@ export function NewsPage() {
       postCategories={["LOCAL_NEWS", "NATIONAL_NEWS", "WORLD_NEWS"]}
       Icon={NewsIcon}
       mood="wire"
+      writeArticleHref="/news/write"
     />
   );
 }

@@ -138,6 +138,7 @@ export const createPost = async (
     data: {
       authorId,
       content: input.content,
+      title: input.title,
       category: input.category,
       city: input.city ?? author.city,
       country: input.country ?? author.country,

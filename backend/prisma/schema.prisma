@@ -162,6 +162,11 @@ model Post {
   id        String       @id @default(cuid())
   authorId  String
   content   String
+  // Set only for article-style posts (written via the News page's "Write
+  // an article" flow) — a plain microblog post has no headline. Presence
+  // of a title is what the frontend uses to render the article treatment
+  // (headline + prominent thumbnail) instead of the regular post card.
+  title     String?
   category  PostCategory @default(GENERAL)
   city      String?
   country   String?
